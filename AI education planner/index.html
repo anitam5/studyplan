@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#FFF5E8" />
+  <title>Edukuj — ucz się po swojemu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="intro-open">
+  <div class="app-shell" id="appShell" inert>
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="Edukuj — strona główna">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8m-8 4h6"/></svg></span>
+        <span>Edu<span class="brand-accent">kuj</span></span>
+      </a>
+
+      <div class="sidebar-label">TWÓJ WORKSPACE</div>
+      <nav class="main-nav" aria-label="Nawigacja">
+        <a class="nav-link active" href="#dashboard" data-view="dashboard"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M8 3.5v4M16 3.5v4M4 9.5h16M8 13h3m2 0h3m-8 4h3m2 0h3"/></svg></span> Mój tydzień</a>
+        <a class="nav-link" href="#materials" data-view="materials"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C9.8 4.7 6.6 4 3.5 4.7v14c3.1-.7 6.3 0 8.5 1.8m0-14c2.2-1.8 5.4-2.5 8.5-1.8v14c-3.1-.7-6.3 0-8.5 1.8m0-14v14"/></svg></span> Materiały <span class="nav-count" id="subjectCount">0</span></a>
+        <a class="nav-link" href="#availability" data-view="availability"><span class="nav-icon">◷</span> Dostępność</a>
+        <a class="nav-link" href="#tutor" data-view="tutor"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c.9 4.2 2.3 5.6 6.5 6.5-4.2.9-5.6 2.3-6.5 6.5-.9-4.2-2.3-5.6-6.5-6.5 4.2-.9 5.6-2.3 6.5-6.5Z"/><path d="M19 15.5c.4 1.8 1.2 2.6 3 3-.8.2-1.3.4-1.8.9-.6.5-.9 1.1-1.2 2.1-.4-1.8-1.2-2.6-3-3 1.8-.4 2.6-1.2 3-3ZM5 2.5c.3 1.4.9 2 2.3 2.3-1.4.3-2 .9-2.3 2.3-.3-1.4-.9-2-2.3-2.3C4.1 4.5 4.7 3.9 5 2.5Z"/></svg></span> Nexi <span class="nav-ai-label">AI</span></a>
+        <a class="nav-link" href="#archive" data-view="archive"><span class="nav-icon">◴</span> Archiwum <span class="nav-count" id="archiveCount">0</span></a>
+      </nav>
+
+      <div class="sidebar-section-heading"><span class="sidebar-label">MOJE PRZEDMIOTY</span><button id="addSubjectShortcut" class="icon-button" type="button" aria-label="Dodaj przedmiot">+</button></div>
+      <ul id="subjectsList" class="subject-list"></ul>
+
+      <div class="sidebar-note">
+        <span class="note-sparkle">✦</span>
+        <strong>Małe kroki, wielkie cele.</strong>
+        <p>Dobry plan daje głowie przestrzeń na odpoczynek.</p>
+      </div>
+      <div class="profile">
+        <div class="avatar">U</div><div><strong>Twój planer</strong><span>Wszystko pod kontrolą</span></div>
+        <span class="profile-dot"></span>
+      </div>
+    </aside>
+
+    <main id="dashboard" class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span>/</span> <strong>Mój tydzień</strong></div>
+        <div class="topbar-actions">
+          <button id="exportBtn" class="button button-quiet" type="button" title="Zapisz kopię swoich danych">↥ <span>Eksportuj</span></button>
+          <button id="importBtn" class="button button-quiet" type="button" title="Wczytaj kopię danych">↧ <span>Importuj</span></button>
+          <input type="file" id="importFile" accept=".json,application/json" hidden />
+          <div class="top-avatar">U</div>
+        </div>
+      </header>
+
+      <section id="view-dashboard" class="app-view active-view">
+      <section class="welcome-row">
+        <div>
+          <p class="eyebrow" id="todayLabel">TWÓJ PLAN NA TEN TYDZIEŃ</p>
+          <h1>Hej, dasz radę! <span class="wave">✦</span></h1>
+          <p class="welcome-copy">Poułóż naukę po swojemu. Resztę rozplanujemy razem.</p>
+        </div>
+        <button id="generatePlan" class="button button-primary" type="button"><span>✦</span> Odśwież plan</button>
+      </section>
+
+      <section class="stats-grid" aria-label="Podsumowanie">
+        <article class="stat-card"><div class="stat-top"><span class="stat-icon lilac">▤</span><span class="stat-caption">DO PRZEROBIENIA</span></div><div class="stat-value" id="materialStat">0 <small>materiałów</small></div><div class="stat-foot">Wszystko zaczyna się od jednego kroku</div></article>
+        <article class="stat-card"><div class="stat-top"><span class="stat-icon mint">◷</span><span class="stat-caption">CZAS NAUKI</span></div><div class="stat-value" id="timeStat">0 <small>min w tym tygodniu</small></div><div class="stat-foot">W tempie, które Ci pasuje</div></article>
+        <article class="stat-card"><div class="stat-top"><span class="stat-icon peach">✓</span><span class="stat-caption">ZAPLANOWANE SESJE</span></div><div class="stat-value" id="sessionStat">0 <small>sesji</small></div><div class="stat-foot">Twój plan, Twoje zasady</div></article>
+      </section>
+
+      <section class="panel week-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">NAUKA BEZ CHAOSU</p><h2>Twój plan tygodnia</h2></div>
+          <div class="week-controls"><button id="previousWeek" class="icon-button" aria-label="Poprzedni tydzień" type="button">‹</button><span id="weekLabel"></span><button id="nextWeek" class="icon-button" aria-label="Następny tydzień" type="button">›</button></div>
+        </div>
+        <div class="week-scroll"><div id="weekGrid" class="week-grid"></div></div>
+        <div id="planMessage" class="plan-message" aria-live="polite"></div>
+        <div class="legend"><span><i class="legend-dot violet"></i>Do zrobienia</span><span><i class="legend-dot green"></i>Ukończone</span><span class="legend-hint">Nie zdążyłeś? Zgłoś to przy sesji — plan się zmieni.</span></div>
+      </section>
+
+      </section>
+      <section id="view-materials" class="app-view">
+          <section id="materials" class="panel materials-panel">
+            <div class="panel-heading compact"><div><p class="eyebrow">NAJPIERW ZBIERZ TEMATY</p><h2>Materiały do nauki</h2></div><div class="materials-heading-actions"><button id="addSubjectInline" class="button button-quiet subject-add-button" type="button">+ Przedmiot</button><span class="counter-pill" id="taskCount">0</span></div></div>
+            <p class="panel-description">Wpisz wszystko, co chcesz zrobić w wybranym tygodniu. Planer sam wybierze dni i godziny.</p>
+            <form id="taskForm" class="task-form">
+              <label for="taskTitle">Co masz do zrobienia w tym tygodniu?</label>
+              <input id="taskTitle" placeholder="np. Ułamki — zadania 1–10" maxlength="100" required />
+              <div class="form-two">
+                <div><label for="taskSubject">Przedmiot</label><select id="taskSubject" required></select></div>
+                <div><label for="taskPriority">Ważność</label><select id="taskPriority"><option value="low">Może poczekać</option><option value="medium" selected>Normalna</option><option value="high">Ważne!</option></select></div>
+              </div>
+              <label for="taskDuration">Ile czasu może zająć? Planer podzieli naukę na krótkie sesje.</label>
+              <select id="taskDuration"><option value="30">Około 30 min</option><option value="60" selected>Około 1 godziny</option><option value="90">Około 1,5 godziny</option><option value="120">Około 2 godzin</option><option value="180">Około 3 godzin</option><option value="240">Około 4 godzin</option></select>
+              <button class="button button-dark button-full" type="submit">+ Dodaj materiał</button>
+            </form>
+            <div class="materials-divider"></div>
+            <div class="materials-list-heading"><strong id="taskWeekHeading">Twoje zadania na ten tydzień</strong><span id="listHint">Najpierw dodaj przedmiot</span></div>
+            <ul id="tasksList" class="tasks-list"></ul>
+          </section>
+      </section>
+      <section id="view-availability" class="app-view">
+          <section id="availability" class="panel availability-panel">
+            <div class="panel-heading compact"><div><p class="eyebrow">PLAN DOPASOWANY DO CIEBIE</p><h2>Kiedy masz czas?</h2></div><span class="availability-icon">◷</span></div>
+            <p class="panel-description">Ustaw godziny, w których możesz się uczyć. Ułożymy sesje tylko w tych oknach.</p>
+            <div id="availabilityList" class="availability-list"></div>
+            <div class="availability-footer"><span>Domyślnie: 16:00–19:00</span><span class="saved-indicator"><i></i> Zapisuje się automatycznie</span></div>
+          </section>
+      </section>
+      <section id="view-tutor" class="app-view">
+      <section id="tutor" class="panel tutor-panel">
+        <div class="tutor-intro">
+          <div id="mascotHome" class="tutor-avatar mascot--idle" aria-hidden="true"></div>
+          <div><p class="eyebrow">TWÓJ POMOCNIK W NAUCE</p><h2>Ucz się z Nexi</h2><p>Zapytaj o dowolny temat szkolny — od podstawówki po szkołę ponadpodstawową.</p></div>
+          <span id="aiStatus" class="local-badge" role="status">Łączę z Nexi…</span>
+        </div>
+        <div class="conversation-toolbar"><span id="conversationTitle">Nowa rozmowa</span><button id="newChatBtn" class="button button-quiet" type="button">＋ Nowa rozmowa</button></div>
+        <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
+        <div class="chat-suggestions"><span>Spróbuj:</span><button type="button" data-prompt="Wyjaśnij mi ułamki zwykłe">Ułamki zwykłe</button><button type="button" data-prompt="Jak działa fotosynteza?">Fotosynteza</button><button type="button" data-prompt="Jak rozwiązywać równania?">Równania</button><button type="button" data-prompt="Potrzebuję motywacji">Potrzebuję motywacji 💪</button></div>
+        <form id="chatForm" class="chat-form">
+          <label class="visually-hidden" for="chatInput">Zapytaj Nexi</label>
+          <input id="chatInput" maxlength="2000" placeholder="Napisz, co jest trudne — np. „Nie rozumiem fotosyntezy”" required />
+          <button id="sendChatBtn" type="submit" class="button button-primary">Zapytaj <span>➜</span></button>
+        </form>
+        <p class="tutor-disclaimer">Nexi korzysta z modelu AI. Nie wpisuj danych osobowych — wiadomości są wysyłane do skonfigurowanego dostawcy AI.</p>
+      </section>
+      </section>
+      <section id="view-archive" class="app-view">
+        <section class="panel archive-panel">
+          <div class="panel-heading"><div><p class="eyebrow">ZAPISANE ROZMOWY</p><h2>Archiwum Nexi</h2></div><span id="archiveCountHeading" class="counter-pill">0</span></div>
+          <p class="panel-description">Poprzednie rozmowy zapisują się tutaj, gdy zaczynasz nową. Otwórz dowolną, żeby wrócić do nauki.</p>
+          <div class="archive-retention">
+            <div><label for="archiveRetention">Automatyczne usuwanie starych rozmów</label><p>Liczymy czas od ostatniej aktywności w rozmowie.</p></div>
+            <select id="archiveRetention">
+              <option value="off">Wyłączone</option>
+              <option value="90d">Po 90 dniach</option>
+              <option value="30d">Po 30 dniach</option>
+              <option value="7d">Po 7 dniach</option>
+              <option value="5h">Po 5 godzinach</option>
+            </select>
+          </div>
+          <div class="archive-layout"><div id="archiveList" class="archive-list"></div><div id="archivePreview" class="archive-preview"><div class="empty-list">Wybierz rozmowę z archiwum, aby ją przeczytać.</div></div></div>
+        </section>
+      </section>
+      <footer>Plan i archiwum zapisują się na tym urządzeniu; wiadomości do Nexi trafiają do dostawcy AI <span>·</span> Ucz się mądrze, nie dłużej ✦</footer>
+    </main>
+  </div>
+  <dialog id="subjectDialog" class="subject-dialog">
+    <form id="subjectForm" method="dialog">
+      <p class="eyebrow">NOWY PRZEDMIOT</p>
+      <h2>Co teraz poznajesz?</h2>
+      <label for="subjectName">Nazwa przedmiotu</label>
+      <input id="subjectName" maxlength="40" placeholder="np. Biologia" required />
+      <div class="dialog-actions"><button id="cancelSubject" class="button button-quiet" type="button">Anuluj</button><button class="button button-primary" type="submit">Dodaj przedmiot</button></div>
+    </form>
+  </dialog>
+  <section id="nexiWelcome" class="nexi-welcome" role="dialog" aria-modal="true" aria-labelledby="nexiWelcomeTitle">
+    <div class="nexi-welcome-glow" aria-hidden="true"></div>
+    <div class="nexi-welcome-content">
+      <div id="nexiIntroMascot" class="tutor-avatar mascot--thinking" aria-hidden="true"></div>
+      <div class="nexi-welcome-copy">
+        <p class="nexi-welcome-eyebrow">TWÓJ TOWARZYSZ W NAUCE</p>
+        <h1 id="nexiWelcomeTitle">Cześć, jestem <span>Nexi</span><i class="nexi-welcome-star">✦</i></h1>
+        <p class="nexi-mood-line" id="nexiMoodLine">Hmm… czego dziś razem się nauczymy?</p>
+        <p class="nexi-welcome-description">Pomogę Ci zaplanować naukę, wyjaśnię trudne tematy i będę trzymać za Ciebie kciuki.</p>
+        <button id="enterPlanner" class="nexi-enter-button" type="button">Zaczynamy <span aria-hidden="true">→</span></button>
+        <span class="nexi-welcome-footnote">Twój plan. Twoje tempo. Razem damy radę.</span>
+      </div>
+    </div>
+    <span class="nexi-welcome-spark nexi-welcome-spark-one" aria-hidden="true">✦</span>
+    <span class="nexi-welcome-spark nexi-welcome-spark-two" aria-hidden="true">✧</span>
+  </section>
+  <template id="mascotTemplate">
+    <svg class="mascot-svg" viewBox="0 0 80 80" role="img" aria-label="Nexi, przyjazny pomarańczowy lisek">
+      <defs>
+        <radialGradient id="mascotFur" cx="34%" cy="20%" r="82%">
+          <stop offset="0" stop-color="#FFB35F"/>
+          <stop offset=".55" stop-color="#F28C38"/>
+          <stop offset="1" stop-color="#D96D25"/>
+        </radialGradient>
+        <radialGradient id="mascotBelly" cx="38%" cy="20%" r="90%">
+          <stop offset="0" stop-color="#FFE3C4"/>
+          <stop offset="1" stop-color="#FFD2A6"/>
+        </radialGradient>
+        <filter id="mascotSoftShadow" x="-40%" y="-40%" width="180%" height="190%">
+          <feGaussianBlur stdDeviation="1.4"/>
+        </filter>
+      </defs>
+      <ellipse class="mascot-ground-shadow" cx="41" cy="73" rx="20" ry="4" fill="#704321" opacity=".12" filter="url(#mascotSoftShadow)"/>
+      <path class="mascot-tail" d="M22 61c-7 1-13 7-12 13 1 4 7 5 12 2 5-3 8-7 10-12" fill="none" stroke="#D97536" stroke-width="8" stroke-linecap="round"/>
+      <path class="mascot-tail-highlight" d="M11 72c1 3 4 4 7 2 2-1 4-3 6-5" fill="none" stroke="#FFF5E8" stroke-width="5" stroke-linecap="round"/>
+      <g class="mascot-calendar">
+        <rect x="52" y="12" width="24" height="27" rx="7" fill="#FFFCF7" stroke="#B99878" stroke-width="1.5"/>
+        <path d="M52 20h24M58 9v7m12-7v7" fill="none" stroke="#94765F" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="m58 27 3 3 6-6" fill="none" stroke="#F28C38" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M58 34h11" fill="none" stroke="#B99878" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g class="mascot-bicep">
+        <path d="M58 47c2-5 7-6 10-3l2 4c4-1 7 2 6 6-1 4-6 6-12 5l-8-3z" fill="url(#mascotFur)" stroke="#C86D34" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M68 49c-2 1-3 3-2 5m6-3 2 2" fill="none" stroke="#A9542D" stroke-width="1.4" stroke-linecap="round"/>
+      </g>
+      <g class="mascot-body">
+        <path class="mascot-ear mascot-ear-left" d="M23 32c-5-5-7-13-4-21 1-2 3-2 5 0l12 12c-5 2-9 5-13 9Z" fill="url(#mascotFur)" stroke="#C86D34" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="mascot-ear-inner mascot-ear-inner-left" d="M24 27c-3-4-4-8-3-12l8 9z" fill="#FFD2A6" opacity=".9"/>
+        <path class="mascot-ear mascot-ear-right" d="M53 23 64 11c2-2 4-1 5 1 3 8 1 15-4 21-3-5-7-8-12-10Z" fill="url(#mascotFur)" stroke="#C86D34" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="mascot-ear-inner mascot-ear-inner-right" d="m57 23 8-9c1 5 0 9-3 13z" fill="#FFD2A6" opacity=".9"/>
+        <path class="mascot-antenna" d="M39 25c-3-7-2-12 2-16" fill="none" stroke="#D97536" stroke-width="4" stroke-linecap="round"/>
+        <circle class="mascot-antenna-tip" cx="42" cy="8" r="4.8" fill="#F28C38"/>
+        <circle cx="40.5" cy="6.7" r="1.5" fill="#FFD2A6" opacity=".8"/>
+        <path class="mascot-foot mascot-foot-left" d="M29 66c-2 6-1 11 4 12 5 1 8-3 9-10" fill="url(#mascotFur)" stroke="#C86D34" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="mascot-foot mascot-foot-right" d="M44 67c-1 7 1 11 6 11s8-4 7-11" fill="url(#mascotFur)" stroke="#C86D34" stroke-width="1.1" stroke-linejoin="round"/>
+        <path d="M19 38c2-11 12-19 23-19s21 7 23 19c2 10-1 22-6 29-5 6-11 8-17 8s-13-2-18-8c-6-7-8-19-5-29Z" fill="#C66A32" opacity=".18" transform="translate(0 1.5)"/>
+        <path class="mascot-fur" d="M19 37c2-11 12-19 23-19s21 7 23 19c2 10-1 22-6 29-5 6-11 8-17 8s-13-2-18-8c-6-7-8-19-5-29Z" fill="url(#mascotFur)" stroke="#C86D34" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M24 31c4-7 10-10 17-11" fill="none" stroke="#FFD9AE" stroke-width="2.4" stroke-linecap="round" opacity=".72"/>
+        <path class="mascot-arm mascot-arm-left" d="M22 47c-5-1-10 2-10 6 0 3 3 4 5 3-2 3 0 6 3 5 3 0 7-4 10-9" fill="none" stroke="#E8873F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="mascot-arm mascot-arm-right" d="M62 47c5-2 10 0 11 4 1 3-2 5-5 4 2 3 0 6-3 6-3 0-7-3-10-8" fill="none" stroke="#E8873F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse class="mascot-belly" cx="41" cy="59" rx="14" ry="11" fill="url(#mascotBelly)" opacity=".88"/>
+        <ellipse class="mascot-cheek mascot-cheek-left" cx="28" cy="49" rx="4.5" ry="2.4" fill="#FFD2A6" opacity=".8"/>
+        <ellipse class="mascot-cheek mascot-cheek-right" cx="56" cy="49" rx="4.5" ry="2.4" fill="#FFD2A6" opacity=".8"/>
+        <path class="mascot-brow mascot-brow-left" d="M28 34c2-2 5-2 8-.5" fill="none" stroke="#75462F" stroke-width="1.5" stroke-linecap="round"/>
+        <path class="mascot-brow mascot-brow-right" d="M46 33.5c2-1.5 5-1.5 8 .5" fill="none" stroke="#75462F" stroke-width="1.5" stroke-linecap="round"/>
+        <g class="mascot-eye-group mascot-eye-group-left">
+          <ellipse class="mascot-eye mascot-eye-left" cx="34" cy="41" rx="5" ry="6.2" fill="#FFFCF7"/>
+          <ellipse class="mascot-pupil mascot-pupil-left" cx="35" cy="42" rx="3" ry="4.1" fill="#302821"/>
+          <circle cx="36" cy="40" r="1.35" fill="#fff"/>
+        </g>
+        <g class="mascot-eye-group mascot-eye-group-right">
+          <ellipse class="mascot-eye mascot-eye-right" cx="50" cy="41" rx="5" ry="6.2" fill="#FFFCF7"/>
+          <ellipse class="mascot-pupil mascot-pupil-right" cx="51" cy="42" rx="3" ry="4.1" fill="#302821"/>
+          <circle cx="52" cy="40" r="1.35" fill="#fff"/>
+        </g>
+        <ellipse class="mascot-snout" cx="42" cy="48.5" rx="6.6" ry="4.7" fill="#FFF5E8"/>
+        <ellipse class="mascot-nose" cx="42" cy="46.5" rx="1.8" ry="1.3" fill="#75462F"/>
+        <path class="mascot-mouth" d="M42 48v2c-1.8 2.8-4 3-5 1.5m5-1.5c1.8 2.8 4 3 5 1.5" fill="none" stroke="#75462F" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="mascot-frown" d="M38 53c2-2 6-2 8 0" fill="none" stroke="#75462F" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g class="mascot-star">
+        <path d="M67 14c.8 4.5 2 5.7 6.5 6.5-4.5.8-5.7 2-6.5 6.5-.8-4.5-2-5.7-6.5-6.5 4.5-.8 5.7-2 6.5-6.5Z" fill="#FFD86B"/>
+        <path d="M57 17v3m-1.5-1.5h3M76 30v3m-1.5-1.5h3" fill="none" stroke="#F28C38" stroke-width="1.7" stroke-linecap="round"/>
+      </g>
+      <g class="mascot-book">
+        <path d="M28 53c4-2 9-1 13 2v17c-4-3-9-4-13-2V53Zm26 0c-4-2-9-1-13 2v17c4-3 9-4 13-2V53Z" fill="#5A3828" stroke="#3A261E" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M41 55v17" fill="none" stroke="#D5A876" stroke-width="1"/>
+        <path d="m46 59 1.3 2.7 3 .4-2.2 2.1.5 3-2.6-1.4-2.7 1.4.5-3-2.1-2.1 2.9-.4z" fill="#FFD17D"/>
+        <path d="M31 57c2-.7 4-.5 6 .2m-6 2c1.6-.5 3.5-.3 5 .3" fill="none" stroke="#F5D8B4" stroke-width=".7" stroke-linecap="round" opacity=".75"/>
+      </g>
+    </svg>
+  </template>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
