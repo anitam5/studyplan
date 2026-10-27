@@ -103,7 +103,35 @@
   }
 
   function defaultAvailability() {
-    return Array.from({ length: 7 }, (_, index) => ({ enabled: index < 5, start: index < 5 ? "16:00" : "10:00", end: index < 5 ? "19:00" : "14:00" }));
+    return Array.from({ length: 7 }, (_, index) => ({
+      enabled: index < 5,
+      intervals: [{ start: index < 5 ? "16:00" : "10:00", end: index < 5 ? "19:00" : "14:00" }]
+    }));
+  }
+
+  function normalizeAvailability(items) {
+    if (!Array.isArray(items) || items.length !== 7) throw new Error("W pliku brakuje ustawień dostępności.");
+    const defaults = defaultAvailability();
+    return items.map((item, index) => {
+      const sourceIntervals = Array.isArray(item?.intervals)
+        ? item.intervals
+        : [{ start: item?.start, end: item?.end }];
+      const intervals = sourceIntervals
+        .filter((interval) => isTime(interval?.start) && isTime(interval?.end) && interval.start < interval.end)
+        .map((interval) => ({ start: interval.start, end: interval.end }))
+        .sort((a, b) => a.start.localeCompare(b.start));
+      const mergedIntervals = [];
+      intervals.forEach((interval) => {
+        const previous = mergedIntervals.at(-1);
+        if (previous && interval.start <= previous.end) {
+          if (interval.end > previous.end) previous.end = interval.end;
+        } else mergedIntervals.push(interval);
+      });
+      return {
+        enabled: Boolean(item?.enabled),
+        intervals: Array.isArray(item?.intervals) ? mergedIntervals : mergedIntervals.length ? mergedIntervals : defaults[index].intervals
+      };
+    });
   }
 
   function makeId() {
@@ -148,17 +176,17 @@
           const legacyWeek = firstSession
             ? dateKey(mondayOf(dateFromKey(firstSession)))
             : task.due && /^\d{4}-\d{2}-\d{2}$/.test(task.due) ? dateKey(mondayOf(dateFromKey(task.due))) : dateKey(weekStart);
-          return { ...task, week: /^\d{4}-\d{2}-\d{2}$/.test(task.week) ? task.week : legacyWeek };
+          return {
+            ...task,
+            completed: Boolean(task.completed),
+            week: /^\d{4}-\d{2}-\d{2}$/.test(task.week) ? task.week : legacyWeek
+          };
         });
       const taskIds = new Set(tasks.map((item) => item.id));
       const sessions = oldSessions.filter((item) => taskIds.has(item.taskId) && Number.isFinite(item.minutes))
         .map((item) => ({ ...item, completed: Boolean(item.completed) }));
       const availability = Array.isArray(parsed.availability) && parsed.availability.length === 7
-        ? parsed.availability.map((item, index) => ({
-          enabled: Boolean(item?.enabled),
-          start: isTime(item?.start) ? item.start : defaultAvailability()[index].start,
-          end: isTime(item?.end) ? item.end : defaultAvailability()[index].end
-        }))
+        ? normalizeAvailability(parsed.availability)
         : defaultAvailability();
       state = {
         subjects,
@@ -187,6 +215,16 @@
 
   function completedMinutes(taskId) {
     return state.sessions.reduce((total, session) => total + (session.taskId === taskId && session.completed ? session.minutes : 0), 0);
+  }
+
+  function taskIsComplete(task) {
+    return Boolean(task.completed) || completedMinutes(task.id) >= task.duration;
+  }
+
+  function taskProgressForWeek(week = weekKey()) {
+    const tasks = state.tasks.filter((task) => task.week === week);
+    const completed = tasks.filter(taskIsComplete).length;
+    return { total: tasks.length, completed, remaining: tasks.length - completed };
   }
 
   function renderSubjects() {
@@ -244,7 +282,16 @@
     const weeklyTasks = state.tasks.filter((task) => task.week === weekKey());
     const sorted = [...weeklyTasks].sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority) || a.title.localeCompare(b.title, "pl"));
     $("#taskCount").textContent = String(sorted.length);
-    $("#listHint").textContent = sorted.length ? "Plan dopasowany do Twojego tygodnia" : "Dodaj pierwsze zadanie";
+    $("#listHint").textContent = sorted.length ? "Zaznacz po przerobieniu" : "Dodaj pierwsze zadanie";
+    const progress = taskProgressForWeek();
+    const progressPercent = progress.total ? Math.round((progress.completed / progress.total) * 100) : 0;
+    const progressBox = $("#taskProgress");
+    progressBox.hidden = !progress.total;
+    $("#taskProgressLabel").textContent = `${progress.completed} z ${progress.total} przerobione · ${progress.remaining} do zrobienia`;
+    $("#taskProgressPercent").textContent = `${progressPercent}%`;
+    const progressBar = $("#taskProgressBar");
+    progressBar.style.width = `${progressPercent}%`;
+    progressBox.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(progressPercent));
     if (!sorted.length) {
       const empty = document.createElement("li");
       empty.className = "empty-list";
@@ -253,7 +300,14 @@
     }
     sorted.forEach((task) => {
       const item = document.createElement("li");
-      item.className = "task-item";
+      const completed = taskIsComplete(task);
+      item.className = `task-item${completed ? " is-complete" : ""}`;
+      const toggle = document.createElement("input");
+      toggle.type = "checkbox";
+      toggle.className = "task-complete-toggle";
+      toggle.checked = completed;
+      toggle.setAttribute("aria-label", `${completed ? "Oznacz jako do zrobienia" : "Oznacz jako przerobione"}: ${task.title}`);
+      toggle.addEventListener("change", () => toggleTaskComplete(task.id));
       const main = document.createElement("div");
       main.className = "task-item-main";
       const title = document.createElement("span");
@@ -268,7 +322,7 @@
       const priority = document.createElement("span");
       priority.className = "priority-label";
       priority.textContent = PRIORITY_LABELS[task.priority] || PRIORITY_LABELS.medium;
-      if (completedMinutes(task.id) >= task.duration) {
+      if (completed) {
         const finished = document.createElement("span");
         finished.className = "task-complete-label";
         finished.textContent = "Ukończone ✓";
@@ -293,17 +347,30 @@
       remove.textContent = "×";
       remove.addEventListener("click", () => removeTask(task.id));
       actions.append(edit, remove);
-      item.append(main, actions);
+      item.append(toggle, main, actions);
       list.append(item);
     });
+  }
+
+  function toggleTaskComplete(id) {
+    const task = taskFor(id);
+    if (!task) return;
+    const completed = !taskIsComplete(task);
+    task.completed = completed;
+    state.sessions.forEach((session) => {
+      if (session.taskId === id) session.completed = completed;
+    });
+    createPlan(false, task.week);
+    setMascotMood(completed ? "celebrating" : "planning", 1800);
+    showToast(completed ? "Materiał oznaczony jako przerobiony. Świetna robota! ✨" : "Materiał wrócił do zrobienia — plan został uaktualniony.");
   }
 
   function renderAvailability() {
     const list = $("#availabilityList");
     list.replaceChildren();
     state.availability.forEach((availability, index) => {
-      const row = document.createElement("div");
-      row.className = `availability-row${availability.enabled ? "" : " disabled"}`;
+      const day = document.createElement("section");
+      day.className = `availability-day${availability.enabled ? "" : " disabled"}`;
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.checked = availability.enabled;
@@ -313,23 +380,62 @@
       const label = document.createElement("label");
       label.htmlFor = checkbox.id;
       label.textContent = DAY_FULL_NAMES[index];
-      const start = document.createElement("input");
-      start.type = "time";
-      start.value = availability.start;
-      start.dataset.day = String(index);
-      start.dataset.field = "start";
-      start.setAttribute("aria-label", `Początek dostępności: ${DAY_FULL_NAMES[index]}`);
-      const separator = document.createElement("span");
-      separator.className = "time-separator";
-      separator.textContent = "–";
-      const end = document.createElement("input");
-      end.type = "time";
-      end.value = availability.end;
-      end.dataset.day = String(index);
-      end.dataset.field = "end";
-      end.setAttribute("aria-label", `Koniec dostępności: ${DAY_FULL_NAMES[index]}`);
-      row.append(checkbox, label, start, separator, end);
-      list.append(row);
+      const heading = document.createElement("div");
+      heading.className = "availability-day-heading";
+      const dayName = document.createElement("div");
+      dayName.className = "availability-day-name";
+      dayName.append(checkbox, label);
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "availability-add";
+      add.dataset.day = String(index);
+      add.dataset.action = "add";
+      add.textContent = "+ Dodaj godziny";
+      add.setAttribute("aria-label", `Dodaj godziny nauki: ${DAY_FULL_NAMES[index]}`);
+      dayName.append(add);
+      heading.append(dayName);
+      const intervals = document.createElement("div");
+      intervals.className = "availability-intervals";
+      if (!availability.intervals.length) {
+        const empty = document.createElement("span");
+        empty.className = "availability-empty";
+        empty.textContent = "Nie dodano jeszcze godzin";
+        intervals.append(empty);
+      }
+      availability.intervals.forEach((interval, intervalIndex) => {
+        const row = document.createElement("div");
+        row.className = "availability-interval";
+        const start = document.createElement("input");
+        start.type = "time";
+        start.value = interval.start;
+        start.dataset.day = String(index);
+        start.dataset.interval = String(intervalIndex);
+        start.dataset.field = "start";
+        start.setAttribute("aria-label", `Początek przedziału ${intervalIndex + 1}: ${DAY_FULL_NAMES[index]}`);
+        const separator = document.createElement("span");
+        separator.className = "time-separator";
+        separator.textContent = "–";
+        const end = document.createElement("input");
+        end.type = "time";
+        end.value = interval.end;
+        end.dataset.day = String(index);
+        end.dataset.interval = String(intervalIndex);
+        end.dataset.field = "end";
+        end.setAttribute("aria-label", `Koniec przedziału ${intervalIndex + 1}: ${DAY_FULL_NAMES[index]}`);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "availability-remove";
+        remove.dataset.day = String(index);
+        remove.dataset.interval = String(intervalIndex);
+        remove.dataset.action = "remove";
+        remove.textContent = "×";
+        remove.title = "Usuń przedział";
+        remove.setAttribute("aria-label", `Usuń przedział ${intervalIndex + 1}: ${DAY_FULL_NAMES[index]}`);
+        row.append(start, separator, end, remove);
+        intervals.append(row);
+      });
+      day.append(heading, intervals);
+      list.append(day);
     });
   }
 
@@ -413,8 +519,9 @@
     }
     $("#timeStat").innerHTML = `${weeklyMinutes} <small>min w tym tygodniu</small>`;
     $("#sessionStat").innerHTML = `${weeklyCount} <small>${polishCount(weeklyCount, ["sesja", "sesje", "sesji"])}</small>`;
-    const remaining = state.tasks.filter((task) => task.week === weekKey() && completedMinutes(task.id) < task.duration).length;
-    $("#materialStat").innerHTML = `${remaining} <small>${polishCount(remaining, ["zadanie", "zadania", "zadań"])}</small>`;
+    const progress = taskProgressForWeek();
+    $("#materialStat").innerHTML = `${progress.remaining} <small>${polishCount(progress.remaining, ["zadanie", "zadania", "zadań"])}</small>`;
+    document.querySelector(".stats-grid .stat-card:first-child .stat-foot").textContent = `${progress.completed} przerobione · ${progress.remaining} zostało`;
     $("#todayLabel").textContent = `TYDZIEŃ ${formatter.format(weekStart).toLocaleUpperCase("pl-PL")} – ${formatter.format(lastDate).toLocaleUpperCase("pl-PL")}`;
   }
 
@@ -680,8 +787,8 @@
       reservedByDate.get(session.date).push([session.start, session.end]);
     });
     const remaining = new Map();
-    state.tasks.forEach((task) => remaining.set(task.id, Math.max(0, task.duration - completedMinutes(task.id))));
-    const pending = state.tasks.filter((task) => task.week === targetWeek && (remaining.get(task.id) || 0) > 0);
+    state.tasks.forEach((task) => remaining.set(task.id, taskIsComplete(task) ? 0 : Math.max(0, task.duration - completedMinutes(task.id))));
+    const pending = state.tasks.filter((task) => task.week === targetWeek && !taskIsComplete(task) && (remaining.get(task.id) || 0) > 0);
     pending.sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority) || a.title.localeCompare(b.title, "pl"));
     const generated = [];
     const startDate = dateFromKey(targetWeek) < dateFromKey(today) ? dateFromKey(today) : dateFromKey(targetWeek);
@@ -689,30 +796,31 @@
       const key = dateKey(date);
       const dayIndex = (date.getDay() + 6) % 7;
       const availability = state.availability[dayIndex];
-      if (!availability.enabled) continue;
-      const end = minutesOf(availability.end);
-      let slotStart = minutesOf(availability.start);
-      if (key === today) {
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        slotStart = Math.max(slotStart, Math.ceil(currentMinutes / 60) * 60);
-      }
+      if (!availability.enabled || !availability.intervals.length) continue;
       const busy = reservedByDate.get(key) || [];
       const dayTasks = new Set();
-      while (slotStart < end) {
-        const slotEnd = Math.min(slotStart + 50, end);
-        const conflict = busy.some(([busyStart, busyEnd]) => slotStart < busyEnd + 10 && slotEnd + 10 > busyStart);
-        if (slotEnd > slotStart && !conflict) {
-          const eligible = pending.filter((task) => (remaining.get(task.id) || 0) > 0);
-          if (!eligible.length) break;
-          const task = eligible.find((candidate) => !dayTasks.has(candidate.id)) || eligible[0];
-          const duration = Math.min(slotEnd - slotStart, remaining.get(task.id));
-          generated.push({ id: makeId(), taskId: task.id, date: key, start: slotStart, end: slotStart + duration, minutes: duration, completed: false });
-          remaining.set(task.id, remaining.get(task.id) - duration);
-          dayTasks.add(task.id);
-          busy.push([slotStart, slotStart + duration]);
+      const now = new Date();
+      const currentMinutes = key === today ? now.getHours() * 60 + now.getMinutes() : 0;
+      for (const interval of availability.intervals) {
+        const end = minutesOf(interval.end);
+        if (key === today && end <= currentMinutes) continue;
+        let slotStart = minutesOf(interval.start);
+        if (key === today) slotStart = Math.max(slotStart, Math.ceil(currentMinutes / 60) * 60);
+        while (slotStart < end) {
+          const slotEnd = Math.min(slotStart + 50, end);
+          const conflict = busy.some(([busyStart, busyEnd]) => slotStart < busyEnd + 10 && slotEnd + 10 > busyStart);
+          if (slotEnd > slotStart && !conflict) {
+            const eligible = pending.filter((task) => (remaining.get(task.id) || 0) > 0);
+            if (!eligible.length) break;
+            const task = eligible.find((candidate) => !dayTasks.has(candidate.id)) || eligible[0];
+            const duration = Math.min(slotEnd - slotStart, remaining.get(task.id));
+            generated.push({ id: makeId(), taskId: task.id, date: key, start: slotStart, end: slotStart + duration, minutes: duration, completed: false });
+            remaining.set(task.id, remaining.get(task.id) - duration);
+            dayTasks.add(task.id);
+            busy.push([slotStart, slotStart + duration]);
+          }
+          slotStart += 60;
         }
-        slotStart += 60;
       }
     }
     state.sessions = [...outsideWeek, ...locked, ...generated];
@@ -802,7 +910,7 @@
       showToast("Wpisz zadanie i wybierz przedmiot.");
       return;
     }
-    const task = { id: makeId(), title, subjectId, week: weekKey(), duration: Number($("#taskDuration").value), priority: $("#taskPriority").value };
+    const task = { id: makeId(), title, subjectId, week: weekKey(), duration: Number($("#taskDuration").value), priority: $("#taskPriority").value, completed: false };
     state.tasks.push(task);
     $("#taskTitle").value = "";
     createPlan(true);
@@ -834,6 +942,10 @@
     const session = state.sessions.find((item) => item.id === id);
     if (!session) return;
     session.completed = !session.completed;
+    if (!session.completed) {
+      const task = taskFor(session.taskId);
+      if (task) task.completed = false;
+    }
     createPlan(false, weekKey());
     if (session.completed) {
       setMascotMood("celebrating", 1800);
@@ -859,18 +971,60 @@
     const entry = state.availability[index];
     if (target.type === "checkbox") entry.enabled = target.checked;
     else if (target.dataset.field === "start" || target.dataset.field === "end") {
+      const intervalIndex = Number(target.dataset.interval);
+      const interval = entry.intervals[intervalIndex];
+      if (!Number.isInteger(intervalIndex) || !interval) return;
       const field = target.dataset.field;
-      const other = field === "start" ? entry.end : entry.start;
-      if ((field === "start" && target.value >= other) || (field === "end" && target.value <= other)) {
-        showToast("Godzina końca musi być późniejsza niż godzina początku.");
-        target.value = entry[field];
+      const updatedInterval = { ...interval, [field]: target.value };
+      const overlaps = entry.intervals.some((other, otherIndex) =>
+        otherIndex !== intervalIndex && updatedInterval.start < other.end && updatedInterval.end > other.start
+      );
+      if (!isTime(updatedInterval.start) || !isTime(updatedInterval.end) || updatedInterval.start >= updatedInterval.end || overlaps) {
+        showToast(overlaps ? "Przedziały w jednym dniu nie mogą na siebie nachodzić." : "Godzina końca musi być późniejsza niż godzina początku.");
+        renderAvailability();
         return;
       }
-      entry[field] = target.value;
+      entry.intervals[intervalIndex] = updatedInterval;
     } else return;
+    saveAvailabilityChange();
+  }
+
+  function addAvailabilityInterval(dayIndex) {
+    const day = state.availability[dayIndex];
+    if (!day) return;
+    const sorted = [...day.intervals].sort((a, b) => a.start.localeCompare(b.start));
+    const candidates = [];
+    if (sorted.length) {
+      const latestEnd = minutesOf(sorted.at(-1).end);
+      if (latestEnd < 22 * 60) candidates.push(latestEnd);
+    }
+    candidates.push(19 * 60, 10 * 60, 13 * 60);
+    for (let start = 7 * 60; start <= 22 * 60; start += 30) candidates.push(start);
+    const start = candidates.find((candidate) => {
+      const end = candidate + 60;
+      return end <= 23 * 60 && sorted.every((interval) => end <= minutesOf(interval.start) || candidate >= minutesOf(interval.end));
+    });
+    if (start === undefined) {
+      showToast("Nie ma już miejsca na kolejny przedział godzin w tym dniu.");
+      return;
+    }
+    day.intervals.push({ start: timeLabel(start), end: timeLabel(start + 60) });
+    day.intervals.sort((a, b) => a.start.localeCompare(b.start));
+    day.enabled = true;
+    saveAvailabilityChange();
+  }
+
+  function removeAvailabilityInterval(dayIndex, intervalIndex) {
+    const day = state.availability[dayIndex];
+    if (!day || !day.intervals[intervalIndex]) return;
+    day.intervals.splice(intervalIndex, 1);
+    saveAvailabilityChange();
+  }
+
+  function saveAvailabilityChange() {
     saveState();
     if (state.generated) replanAllWeeks();
-    else renderAvailability();
+    else renderAll();
     showToast("Zapisano Twoją dostępność i uaktualniono plan.");
   }
 
@@ -896,12 +1050,7 @@
           .map((task) => ({ ...task, week: /^\d{4}-\d{2}-\d{2}$/.test(task.week) ? task.week : dateKey(mondayOf(task.due ? dateFromKey(task.due) : new Date())) }));
         const taskIds = new Set(tasks.map((item) => item.id));
         const sessions = Array.isArray(parsed.sessions) ? parsed.sessions.filter((item) => item && typeof item.id === "string" && taskIds.has(item.taskId) && typeof item.date === "string" && Number.isFinite(item.minutes)).map((item) => ({ ...item, completed: Boolean(item.completed) })) : [];
-        const availability = parsed.availability.slice(0, 7).map((item, index) => ({
-          enabled: Boolean(item?.enabled),
-          start: isTime(item?.start) ? item.start : defaultAvailability()[index].start,
-          end: isTime(item?.end) ? item.end : defaultAvailability()[index].end
-        }));
-        if (availability.length !== 7) throw new Error("W pliku brakuje ustawień dostępności.");
+        const availability = normalizeAvailability(parsed.availability.slice(0, 7));
         if (!window.confirm("Import zastąpi aktualne przedmioty, zadania i plan. Kontynuować?")) return;
         state = {
           subjects,
@@ -1007,6 +1156,13 @@
     renderWeek();
   });
   $("#availabilityList").addEventListener("change", updateAvailability);
+  $("#availabilityList").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-action]");
+    if (!button) return;
+    const dayIndex = Number(button.dataset.day);
+    if (button.dataset.action === "add") addAvailabilityInterval(dayIndex);
+    else if (button.dataset.action === "remove") removeAvailabilityInterval(dayIndex, Number(button.dataset.interval));
+  });
   $("#exportBtn").addEventListener("click", exportData);
   $("#importBtn").addEventListener("click", () => $("#importFile").click());
   $("#importFile").addEventListener("change", (event) => {
