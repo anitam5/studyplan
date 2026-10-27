@@ -96,15 +96,19 @@
             </form>
             <div class="materials-divider"></div>
             <div class="materials-list-heading"><strong id="taskWeekHeading">Twoje zadania na ten tydzień</strong><span id="listHint">Najpierw dodaj przedmiot</span></div>
+            <div id="taskProgress" class="task-progress" hidden>
+              <div class="task-progress-label"><span id="taskProgressLabel"></span><span id="taskProgressPercent"></span></div>
+              <div class="task-progress-track" role="progressbar" aria-label="Postęp przerabiania materiałów" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="taskProgressBar"></span></div>
+            </div>
             <ul id="tasksList" class="tasks-list"></ul>
           </section>
       </section>
       <section id="view-availability" class="app-view">
           <section id="availability" class="panel availability-panel">
             <div class="panel-heading compact"><div><p class="eyebrow">PLAN DOPASOWANY DO CIEBIE</p><h2>Kiedy masz czas?</h2></div><span class="availability-icon">◷</span></div>
-            <p class="panel-description">Ustaw godziny, w których możesz się uczyć. Ułożymy sesje tylko w tych oknach.</p>
+            <p class="panel-description">Dodaj wszystkie pory, w których możesz się uczyć. Każdego dnia możesz ustawić kilka przedziałów — plan uwzględni je wszystkie.</p>
             <div id="availabilityList" class="availability-list"></div>
-            <div class="availability-footer"><span>Domyślnie: 16:00–19:00</span><span class="saved-indicator"><i></i> Zapisuje się automatycznie</span></div>
+            <div class="availability-footer"><span>Dodawaj osobne okna, np. rano i po południu.</span><span class="saved-indicator"><i></i> Zapisuje się automatycznie</span></div>
           </section>
       </section>
       <section id="view-tutor" class="app-view">
