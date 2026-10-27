@@ -9,11 +9,11 @@ Wymagany jest Node.js 20.6 lub nowszy.
 3. Opcjonalnie zmień `OPENAI_MODEL`, `OPENAI_BASE_URL` lub `PORT`.
 4. Uruchom `npm start` w folderze projektu i otwórz adres wyświetlony w terminalu.
 
-Przy pierwszym uruchomieniu pojawi się ekran powitalny Nexi. Wybierz „Zaczynamy”, aby przejść do planera. Nexi zmienia mimikę i nastrój podczas powitania.
+Przy pierwszym uruchomieniu pojawi się ekran powitalny Kiro. Wybierz „Zaczynamy”, aby przejść do planera. Kiro zmienia mimikę i nastrój podczas powitania.
 
 W zakładce „Dostępność” możesz ustawić kilka niezależnych przedziałów nauki dla każdego dnia; planer układa sesje we wszystkich wybranych oknach. Na liście materiałów zaznaczaj przerobione zadania i śledź tygodniowy postęp.
 
-Bez `OPENAI_API_KEY` planer i zapisane rozmowy nadal działają, ale Nexi nie może wygenerować odpowiedzi. Dostawca AI może naliczać opłaty za użycie API; klucz i warunki korzystania z usługi są zarządzane niezależnie od aplikacji.
+Bez `OPENAI_API_KEY` planer i zapisane rozmowy nadal działają, ale Kiro nie może wygenerować odpowiedzi. Dostawca AI może naliczać opłaty za użycie API; klucz i warunki korzystania z usługi są zarządzane niezależnie od aplikacji.
 
 ## Prywatność
 

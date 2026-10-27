@@ -54,7 +54,7 @@
       .map((item) => ({ role: item.role, text: String(item.text ?? item.content).slice(0, 8000), mood: typeof item.mood === "string" ? item.mood : "idle" }));
     return {
       id: typeof conversation.id === "string" ? conversation.id : makeId(),
-      title: typeof conversation.title === "string" && conversation.title.trim() ? conversation.title.slice(0, 60) : "Rozmowa z Nexi",
+      title: typeof conversation.title === "string" && conversation.title.trim() ? conversation.title.slice(0, 60) : "Rozmowa z Kiro",
       createdAt: typeof conversation.createdAt === "string" ? conversation.createdAt : new Date().toISOString(),
       updatedAt: typeof conversation.updatedAt === "string" ? conversation.updatedAt : new Date().toISOString(),
       messages: normalizedMessages
@@ -530,7 +530,7 @@
     messages.replaceChildren();
     $("#conversationTitle").textContent = state.currentChat.title || "Nowa rozmowa";
     if (!state.currentChat.messages.length) {
-      addChatMessage("assistant", "Cześć! Jestem Nexi ✨ Napisz, co sprawia Ci trudność. Wyjaśnię temat prosto, pokażę przykład i pomogę Ci go zrozumieć.", "idle");
+      addChatMessage("assistant", "Cześć! Jestem Kiro ✨ Napisz, co sprawia Ci trudność. Wyjaśnię temat prosto, pokażę przykład i pomogę Ci go zrozumieć.", "idle");
       return;
     }
     state.currentChat.messages.forEach((message) => addChatMessage(message.role, message.text, message.mood || "idle"));
@@ -546,7 +546,7 @@
     if (!state.chatSessions.length) {
       const empty = document.createElement("div");
       empty.className = "empty-list";
-      empty.textContent = "Nie ma tu jeszcze zapisanych rozmów. Rozpocznij nową rozmowę z Nexi, a pojawi się tutaj.";
+      empty.textContent = "Nie ma tu jeszcze zapisanych rozmów. Rozpocznij nową rozmowę z Kiro, a pojawi się tutaj.";
       list.append(empty);
       preview.innerHTML = '<div class="empty-list">Wybierz rozmowę z archiwum, aby ją przeczytać.</div>';
       selectedArchiveId = null;
@@ -561,7 +561,7 @@
       title.textContent = conversation.title;
       const meta = document.createElement("span");
       const date = new Date(conversation.updatedAt);
-      meta.textContent = Number.isNaN(date.getTime()) ? "Rozmowa z Nexi" : date.toLocaleString("pl-PL", { dateStyle: "medium", timeStyle: "short" });
+      meta.textContent = Number.isNaN(date.getTime()) ? "Rozmowa z Kiro" : date.toLocaleString("pl-PL", { dateStyle: "medium", timeStyle: "short" });
       button.append(title, meta);
       button.addEventListener("click", () => {
         selectedArchiveId = conversation.id;
@@ -588,7 +588,7 @@
       const bubble = document.createElement("article");
       bubble.className = `archive-message ${message.role}`;
       const speaker = document.createElement("strong");
-      speaker.textContent = message.role === "assistant" ? "Nexi" : "Ty";
+      speaker.textContent = message.role === "assistant" ? "Kiro" : "Ty";
       const text = document.createElement("p");
       text.textContent = message.text;
       bubble.append(speaker, text);
@@ -644,7 +644,7 @@
 
   function resumeArchivedConversation(id) {
     if (chatRequestPending) {
-      showToast("Poczekaj, aż Nexi dokończy odpowiedź.");
+      showToast("Poczekaj, aż Kiro dokończy odpowiedź.");
       return;
     }
     const index = state.chatSessions.findIndex((conversation) => conversation.id === id);
@@ -751,7 +751,7 @@
     copy.className = "message-copy";
     const speaker = document.createElement("span");
     speaker.className = "chat-speaker";
-    speaker.textContent = role === "assistant" ? "Nexi" : "Ty";
+    speaker.textContent = role === "assistant" ? "Kiro" : "Ty";
     const content = document.createElement("p");
     content.textContent = text;
     copy.append(speaker, content);
@@ -949,7 +949,7 @@
     createPlan(false, weekKey());
     if (session.completed) {
       setMascotMood("celebrating", 1800);
-      showToast("Nexi świętuje razem z Tobą — świetna robota! 🎉");
+      showToast("Kiro świętuje razem z Tobą — świetna robota! 🎉");
     } else showToast("Sesja wróciła do planu.");
   }
 
@@ -1079,10 +1079,10 @@
       const response = await fetch("/api/status");
       if (!response.ok) throw new Error("Status serwera jest niedostępny.");
       const status = await response.json();
-      badge.textContent = status.configured ? "Nexi jest gotowa" : "Brak klucza AI na serwerze";
+      badge.textContent = status.configured ? "Kiro jest gotowa" : "Brak klucza AI na serwerze";
       badge.classList.toggle("unavailable", !status.configured);
     } catch (error) {
-      badge.textContent = "Serwer Nexi niedostępny";
+      badge.textContent = "Serwer Kiro niedostępny";
       badge.classList.add("unavailable");
     }
   }
@@ -1112,9 +1112,9 @@
         body: JSON.stringify({ messages: state.currentChat.messages.slice(-20).map(({ role, text }) => ({ role, content: text })) })
       });
       const result = await response.json().catch(() => null);
-      if (!result || typeof result !== "object") throw new Error("Serwer Nexi nie zwrócił odpowiedzi w oczekiwanym formacie.");
+      if (!result || typeof result !== "object") throw new Error("Serwer Kiro nie zwrócił odpowiedzi w oczekiwanym formacie.");
       if (!response.ok) throw new Error(result.error || "Nie udało się uzyskać odpowiedzi.");
-      if (typeof result.reply !== "string" || !result.reply.trim()) throw new Error("Nexi zwróciła pustą odpowiedź. Spróbuj ponownie.");
+      if (typeof result.reply !== "string" || !result.reply.trim()) throw new Error("Kiro zwróciła pustą odpowiedź. Spróbuj ponownie.");
       const mood = isMotivation ? "motivating" : "explaining";
       state.currentChat.messages.push({ role: "assistant", text: result.reply.trim(), mood });
       state.currentChat.updatedAt = new Date().toISOString();
@@ -1123,7 +1123,7 @@
       renderArchive();
       setMascotMood(mood, 1800);
     } catch (error) {
-      console.error("Nie udało się uzyskać odpowiedzi Nexi.", error);
+      console.error("Nie udało się uzyskać odpowiedzi Kiro.", error);
       renderChat();
       addChatMessage("assistant", `${error.message} Sprawdź, czy serwer działa i czy ustawiono OPENAI_API_KEY.`, "thinking");
       setMascotMood("thinking", 1800);
