@@ -981,7 +981,7 @@ body.intro-open { overflow: hidden; }
   .archive-preview-heading .button { width: 100%; }
 }
 
-/* Softer, more lifelike movement for Nexi */
+/* Softer, more lifelike movement for Kiro */
 .mascot-svg { overflow: visible; filter: drop-shadow(0 2px 2px rgba(112, 67, 33, .08)); }
 .mascot-body {
   transform-box: fill-box;
@@ -994,8 +994,7 @@ body.intro-open { overflow: hidden; }
 .mascot-tail-highlight { opacity: .75; }
 .mascot-antenna { transform-box: fill-box; transform-origin: 100% 100%; animation: mascot-antenna-sway 4.1s ease-in-out infinite; }
 .mascot-antenna-tip { transform-box: fill-box; transform-origin: center; animation: mascot-tip-bob 4.1s ease-in-out infinite; }
-.mascot-eye-group { transform-box: fill-box; transform-origin: center; animation: mascot-blink 6.3s ease-in-out infinite; }
-.mascot-eye-group-right { animation-delay: .08s; }
+.mascot-eye-group { transform-box: fill-box; transform-origin: center; animation: none; }
 .mascot-eye { transform: none; }
 .mascot-pupil { transform-box: fill-box; transform-origin: center; animation: mascot-gaze 8.2s ease-in-out infinite; }
 .mascot-pupil-right { animation-delay: .08s; }
@@ -1134,7 +1133,7 @@ body.intro-open { overflow: hidden; }
   .mascot--curious .mascot-brow-left, .mascot--curious .mascot-brow-right { transform: none; }
 }
 
-/* Let Nexi move freely, without an avatar tile */
+/* Let Kiro move freely, without an avatar tile */
 .tutor-avatar {
   width: 104px;
   height: 108px;

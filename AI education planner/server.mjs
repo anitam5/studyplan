@@ -64,7 +64,7 @@ async function chat(request, response) {
   const body = await readJson(request);
   const messages = validateMessages(body);
   if (!API_KEY) {
-    sendJson(response, 503, { error: "Nexi nie jest jeszcze skonfigurowana. Dodaj OPENAI_API_KEY do pliku .env i uruchom serwer ponownie." });
+    sendJson(response, 503, { error: "Kiro nie jest jeszcze skonfigurowana. Dodaj OPENAI_API_KEY do pliku .env i uruchom serwer ponownie." });
     return;
   }
   const controller = new AbortController();
@@ -84,7 +84,7 @@ async function chat(request, response) {
         messages: [
           {
             role: "system",
-            content: "Jesteś Nexi, cierpliwą i przyjazną polską nauczycielką dla uczniów szkoły podstawowej i ponadpodstawowej. Pomagasz z przedmiotami szkolnymi na dowolnym poziomie. Odpowiadaj po polsku, chyba że uczeń wyraźnie prosi o inny język. Wyjaśniaj trudne zagadnienia krok po kroku, dopasuj poziom do pytania, używaj krótkich przykładów i zachęcaj do samodzielnego myślenia. Jeśli poziom lub treść zadania są niejasne, zadaj krótkie pytanie doprecyzowujące. Nie wymyślaj faktów; przy niepewności powiedz o niej. Nie rozwiązuj bezrefleksyjnie całej pracy domowej — pokaż rozumowanie i wspieraj naukę. Bądź życzliwa, zwięzła i bezpieczna dla młodej osoby; nie proś o dane osobowe."
+            content: "Jesteś Kiro, cierpliwą i przyjazną polską nauczycielką dla uczniów szkoły podstawowej i ponadpodstawowej. Pomagasz z przedmiotami szkolnymi na dowolnym poziomie. Odpowiadaj po polsku, chyba że uczeń wyraźnie prosi o inny język. Wyjaśniaj trudne zagadnienia krok po kroku, dopasuj poziom do pytania, używaj krótkich przykładów i zachęcaj do samodzielnego myślenia. Jeśli poziom lub treść zadania są niejasne, zadaj krótkie pytanie doprecyzowujące. Nie wymyślaj faktów; przy niepewności powiedz o niej. Nie rozwiązuj bezrefleksyjnie całej pracy domowej — pokaż rozumowanie i wspieraj naukę. Bądź życzliwa, zwięzła i bezpieczna dla młodej osoby; nie proś o dane osobowe."
           },
           ...messages
         ]
@@ -99,13 +99,13 @@ async function chat(request, response) {
     const reply = result?.choices?.[0]?.message?.content;
     if (typeof reply !== "string" || !reply.trim()) {
       console.error("Dostawca AI zwrócił odpowiedź bez treści.");
-      sendJson(response, 502, { error: "Nexi nie otrzymała odpowiedzi. Spróbuj ponownie." });
+      sendJson(response, 502, { error: "Kiro nie otrzymała odpowiedzi. Spróbuj ponownie." });
       return;
     }
     sendJson(response, 200, { reply: reply.trim() });
   } catch (error) {
     if (error.name === "AbortError") {
-      sendJson(response, 504, { error: "Nexi potrzebuje więcej czasu. Spróbuj ponownie." });
+      sendJson(response, 504, { error: "Kiro potrzebuje więcej czasu. Spróbuj ponownie." });
       return;
     }
     console.error("Nie udało się połączyć z dostawcą AI:", error.message);
@@ -191,5 +191,5 @@ const server = createServer(async (request, response) => {
 
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`Edukuj działa na http://127.0.0.1:${PORT}`);
-  if (!API_KEY) console.warn("Brak OPENAI_API_KEY — czat Nexi nie będzie dostępny do czasu konfiguracji.");
+  if (!API_KEY) console.warn("Brak OPENAI_API_KEY — czat Kiro nie będzie dostępny do czasu konfiguracji.");
 });
