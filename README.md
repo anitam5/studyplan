@@ -1,4 +1,4 @@
-# Nauka-app
+# studyplan
 Co to jest: Aplikacja rozplanowująca naukę.
 
 Dla kogo: Dla uczniów zarówno szkoły podstawowej, jak i średniej, którzy potrzebują pomocy w organizacji swojego czasu.
