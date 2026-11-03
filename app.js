@@ -1,11 +1,21 @@
 (() => {
   const STORAGE_KEY = "planer-nauki-v1";
   const COLORS = ["#F28C38", "#E9A45E", "#D97852", "#A7AD70", "#D78B6E", "#C8A15A", "#73A895", "#CB8067"];
+  const GREETINGS = [
+    "Miło Cię widzieć!",
+    "Zaczynamy? Nauka czeka!",
+    "Każdy krok przybliża do celu!",
+    "Nauka we własnym tempie — zaczynamy!",
+    "Przed nami dobry tydzień!",
+    "Czas na naukę — działamy!",
+    "Mały krok też prowadzi do celu!"
+  ];
+  const LAST_GREETING_KEY = "studyplan-last-greeting-v1";
   const DAY_NAMES = ["pon.", "wt.", "śr.", "czw.", "pt.", "sob.", "niedz."];
   const DAY_FULL_NAMES = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"];
-  const PRIORITY_LABELS = { low: "Może poczekać", medium: "Normalna", high: "Ważne!" };
+  const PRIORITY_LABELS = { low: "Niski", medium: "Normalny", high: "Wysoki" };
   const TOPICS = [
-    { keys: ["ulamki", "ułamek", "ulamek", "licznik", "mianownik"], title: "Ułamki zwykłe", explain: "Ułamek zapisuje część całości. Licznik (na górze) mówi, ile części bierzemy, a mianownik (na dole) — na ile równych części podzielono całość.", analogy: "Wyobraź sobie pizzę podzieloną na 8 kawałków. Jeśli zjesz 3, zjadłeś 3/8 pizzy.", example: "Przy dodawaniu 1/4 + 2/4 mianownik zostaje ten sam, a liczniki dodajemy: 3/4.", quiz: "Ile to 2/5 + 1/5? Spróbuj samodzielnie, zanim sprawdzisz wynik." },
+    { keys: ["ulamki", "ułamek", "ulamek", "licznik", "mianownik"], title: "Ułamki zwykłe", explain: "Ułamek zapisuje część całości. Licznik (na górze) mówi, ile części bierzemy, a mianownik (na dole) — na ile równych części podzielono całość.", analogy: "Wyobraź sobie pizzę podzieloną na 8 kawałków. Jeśli zjemy 3 kawałki, zjemy 3/8 pizzy.", example: "Przy dodawaniu 1/4 + 2/4 mianownik zostaje ten sam, a liczniki dodajemy: 3/4.", quiz: "Ile to 2/5 + 1/5? Spróbuj samodzielnie, zanim sprawdzisz wynik." },
     { keys: ["rownani", "równani", "x =", "niewiadom", "równanie"], title: "Równania", explain: "Równanie to zagadka z liczbą ukrytą pod literą. Obie strony znaku „=” muszą mieć tę samą wartość. Żeby znaleźć niewiadomą, wykonuj to samo działanie po obu stronach.", analogy: "Wyobraź sobie wagę: jeśli zdejmiesz 3 kg z lewej szalki, zdejmij też 3 kg z prawej, żeby równowaga została.", example: "x + 3 = 8. Odejmij 3 po obu stronach: x = 8 − 3, więc x = 5.", quiz: "Spróbuj rozwiązać: x + 6 = 14. Jakie działanie wykonasz po obu stronach?" },
     { keys: ["procent", "%"], title: "Procenty", explain: "Procent znaczy „na sto”. 25% to 25 ze 100, czyli jedna czwarta całości. Aby obliczyć procent z liczby, zamień procent na ułamek dziesiętny i pomnóż.", analogy: "Rabat 20% oznacza, że z każdych 100 zł odejmujesz 20 zł.", example: "10% z 80 = 0,10 × 80 = 8.", quiz: "Ile wynosi 50% z 36? Podpowiedź: 50% to połowa." },
     { keys: ["fotosyntez", "chlorofil", "chloroplast"], title: "Fotosynteza", explain: "Roślina wykorzystuje energię światła, wodę pobraną z gleby i dwutlenek węgla z powietrza, żeby wytworzyć cukier (pokarm). Przy okazji uwalnia tlen.", analogy: "Liść działa jak mała kuchnia na energię słoneczną: woda i CO₂ są składnikami, światło uruchamia przepis, a powstają cukier i tlen.", example: "W skrócie: woda + dwutlenek węgla + światło → cukier + tlen.", quiz: "Jakiego gazu roślina potrzebuje z powietrza do fotosyntezy?" },
@@ -242,7 +252,7 @@
     if (!state.subjects.length) {
       const empty = document.createElement("li");
       empty.className = "subject-empty";
-      empty.textContent = "Dodaj pierwszy przedmiot, żeby zacząć.";
+      empty.textContent = "Dodaj pierwszy przedmiot, aby rozpocząć.";
       list.append(empty);
     }
     state.subjects.forEach((subject, index) => {
@@ -291,12 +301,12 @@
     const weeklyTasks = state.tasks.filter((task) => task.week === weekKey());
     const sorted = [...weeklyTasks].sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority) || a.title.localeCompare(b.title, "pl"));
     $("#taskCount").textContent = String(sorted.length);
-    $("#listHint").textContent = sorted.length ? "Zaznacz po przerobieniu" : "Dodaj pierwsze zadanie";
+    $("#listHint").textContent = sorted.length ? "Oznacz jako ukończone" : "Dodaj pierwsze zadanie";
     const progress = taskProgressForWeek();
     const progressPercent = progress.total ? Math.round((progress.completed / progress.total) * 100) : 0;
     const progressBox = $("#taskProgress");
     progressBox.hidden = !progress.total;
-    $("#taskProgressLabel").textContent = `${progress.completed} z ${progress.total} przerobione · ${progress.remaining} do zrobienia`;
+    $("#taskProgressLabel").textContent = `Postęp: ${progressPercent}% · Pozostało: ${progress.remaining}`;
     $("#taskProgressPercent").textContent = `${progressPercent}%`;
     const progressBar = $("#taskProgressBar");
     progressBar.style.width = `${progressPercent}%`;
@@ -304,7 +314,7 @@
     if (!sorted.length) {
       const empty = document.createElement("li");
       empty.className = "empty-list";
-      empty.textContent = state.subjects.length ? "Dodaj zadania powyżej — rozłożymy je w kalendarzu tego tygodnia." : "Dodaj przedmiot, a potem wpisz zadania na ten tydzień.";
+      empty.textContent = state.subjects.length ? "Dodaj zadania powyżej, a rozplanujemy je na ten tydzień." : "Dodaj przedmiot, a następnie wpisz zadania na ten tydzień.";
       list.append(empty);
     }
     sorted.forEach((task) => {
@@ -334,7 +344,7 @@
       if (completed) {
         const finished = document.createElement("span");
         finished.className = "task-complete-label";
-        finished.textContent = "Ukończone ✓";
+        finished.textContent = "Ukończono ✓";
         meta.append(subject, duration, finished);
       } else {
         meta.append(subject, duration, priority);
@@ -371,7 +381,7 @@
     });
     createPlan(false, task.week);
     setMascotMood(completed ? "celebrating" : "planning", 1800);
-    showToast(completed ? "Materiał oznaczony jako przerobiony. Świetna robota! ✨" : "Materiał wrócił do zrobienia — plan został uaktualniony.");
+    showToast(completed ? "Materiał oznaczono jako ukończony. Świetna robota! ✨" : "Materiał znów jest do zrobienia. Plan został zaktualizowany.");
   }
 
   function renderAvailability() {
@@ -408,7 +418,7 @@
       if (!availability.intervals.length) {
         const empty = document.createElement("span");
         empty.className = "availability-empty";
-        empty.textContent = "Nie dodano jeszcze godzin";
+        empty.textContent = "Nie dodano jeszcze żadnych godzin.";
         intervals.append(empty);
       }
       availability.intervals.forEach((interval, intervalIndex) => {
@@ -503,14 +513,14 @@
         const complete = document.createElement("button");
         complete.type = "button";
         complete.className = "session-done";
-        complete.textContent = session.completed ? "✓ Zrobione" : "Oznacz jako zrobione";
+        complete.textContent = session.completed ? "✓ Sesja ukończona" : "Oznacz sesję jako ukończoną";
         complete.addEventListener("click", () => toggleSession(session.id));
         actions.append(complete);
         if (!session.completed) {
           const missed = document.createElement("button");
           missed.type = "button";
           missed.className = "session-missed";
-          missed.textContent = "Nie udało mi się";
+          missed.textContent = "Zgłoś niezrealizowaną sesję";
           missed.addEventListener("click", () => markSessionMissed(session.id));
           actions.append(missed);
         }
@@ -530,7 +540,7 @@
     $("#sessionStat").innerHTML = `${weeklyCount} <small>${polishCount(weeklyCount, ["sesja", "sesje", "sesji"])}</small>`;
     const progress = taskProgressForWeek();
     $("#materialStat").innerHTML = `${progress.remaining} <small>${polishCount(progress.remaining, ["zadanie", "zadania", "zadań"])}</small>`;
-    document.querySelector(".stats-grid .stat-card:first-child .stat-foot").textContent = `${progress.completed} przerobione · ${progress.remaining} zostało`;
+    document.querySelector(".stats-grid .stat-card:first-child .stat-foot").textContent = `Ukończono: ${progress.completed} · Pozostało: ${progress.remaining}`;
     $("#todayLabel").textContent = `TYDZIEŃ ${formatter.format(weekStart).toLocaleUpperCase("pl-PL")} – ${formatter.format(lastDate).toLocaleUpperCase("pl-PL")}`;
   }
 
@@ -704,6 +714,23 @@
     return $("#mascotTemplate").content.firstElementChild.cloneNode(true);
   }
 
+  function setDashboardGreeting() {
+    let previousGreeting = "";
+    try {
+      previousGreeting = localStorage.getItem(LAST_GREETING_KEY) || "";
+    } catch (error) {
+      console.warn("Nie udało się odczytać poprzedniego powitania.", error);
+    }
+    const choices = GREETINGS.filter((greeting) => greeting !== previousGreeting);
+    const greeting = choices[Math.floor(Math.random() * choices.length)] || GREETINGS[0];
+    $("#dashboardGreeting").firstChild.textContent = `${greeting} `;
+    try {
+      localStorage.setItem(LAST_GREETING_KEY, greeting);
+    } catch (error) {
+      console.warn("Nie udało się zapisać powitania.", error);
+    }
+  }
+
   function openDeviceChoice() {
     $("#appShell").inert = true;
     $("#deviceChoice").hidden = false;
@@ -866,8 +893,8 @@
     if (showFeedback) {
       if (unscheduled.length) {
         $("#planMessage").className = "plan-message warning";
-        $("#planMessage").textContent = `Brakuje czasu na ${unscheduled.length} ${polishCount(unscheduled.length, ["zadanie", "zadania", "zadań"])}. Dodaj wolne godziny lub przenieś zadanie na inny tydzień.`;
-        showToast("Plan zaktualizowany — nie wszystko zmieściło się w tym tygodniu.");
+        $("#planMessage").textContent = `Brakuje czasu na ${unscheduled.length} ${polishCount(unscheduled.length, ["zadanie", "zadania", "zadań"])}. Wskaż dodatkowe godziny dostępności lub przenieś zadanie na inny tydzień.`;
+        showToast("Plan zaktualizowany — nie wszystkie zadania zmieściły się w tym tygodniu.");
       } else if (generated.length || locked.length) {
         $("#planMessage").className = "plan-message";
         const sessionCount = generated.length + locked.length;
@@ -875,8 +902,8 @@
         showToast("Twój plan tygodnia jest gotowy ✦");
       } else {
         $("#planMessage").className = "plan-message";
-        $("#planMessage").textContent = pending.length ? "Nie ma już wolnych okien w tym tygodniu. Zmień dostępność." : "Dodaj zadania, a ułożymy plan dopasowany do Twojego tygodnia.";
-        showToast(pending.length ? "Brak wolnych okien — zmień dostępność." : "Dodaj zadania, aby ułożyć plan.");
+        $("#planMessage").textContent = pending.length ? "Nie ma już wolnych przedziałów w tym tygodniu. Zaktualizuj swoją dostępność." : "Dodaj zadania, a ułożymy plan dopasowany do Twojego tygodnia.";
+        showToast(pending.length ? "Brak wolnych przedziałów — zaktualizuj swoją dostępność." : "Dodaj zadania, aby przygotować plan.");
       }
     } else {
       $("#planMessage").className = "plan-message";
@@ -928,7 +955,7 @@
     const subject = subjectFor(id);
     if (!subject) return;
     const linked = state.tasks.filter((task) => task.subjectId === id);
-    if (!window.confirm(linked.length ? `Usunąć przedmiot „${subject.name}” i ${linked.length} przypisanych zadań?` : `Usunąć przedmiot „${subject.name}”?`)) return;
+    if (!window.confirm(linked.length ? `Usunąć przedmiot „${subject.name}” wraz z przypisanymi zadaniami?` : `Usunąć przedmiot „${subject.name}”?`)) return;
     const taskIds = new Set(linked.map((task) => task.id));
     state.subjects = state.subjects.filter((item) => item.id !== id);
     state.tasks = state.tasks.filter((task) => task.subjectId !== id);
@@ -996,7 +1023,7 @@
     const blockedTime = { date: session.date, start: session.start, end: session.end };
     state.sessions = state.sessions.filter((item) => item.id !== id);
     const overflow = createPlan(false, task.week, [blockedTime]);
-    showToast(overflow ? "Przeniesiono zadanie — w tym tygodniu brakuje już wolnego czasu." : "Nie szkodzi — zadanie ma nowy termin w Twoim planie.");
+    showToast(overflow ? "Przeniesiono zadanie — w tym tygodniu brakuje już wolnego czasu." : "Nic nie szkodzi — zadanie ma nowy termin w planie.");
   }
 
   function updateAvailability(event) {
@@ -1114,7 +1141,7 @@
       const response = await fetch("/api/status");
       if (!response.ok) throw new Error("Status serwera jest niedostępny.");
       const status = await response.json();
-      badge.textContent = status.configured ? "Eduo jest gotowe" : "Brak klucza AI na serwerze";
+      badge.textContent = status.configured ? "Eduo działa" : "Brak klucza AI na serwerze";
       badge.classList.toggle("unavailable", !status.configured);
     } catch (error) {
       badge.textContent = "Serwer Eduo niedostępny";
@@ -1149,7 +1176,7 @@
       const result = await response.json().catch(() => null);
       if (!result || typeof result !== "object") throw new Error("Serwer Eduo nie zwrócił odpowiedzi w oczekiwanym formacie.");
       if (!response.ok) throw new Error(result.error || "Nie udało się uzyskać odpowiedzi.");
-      if (typeof result.reply !== "string" || !result.reply.trim()) throw new Error("Eduo zwróciło pustą odpowiedź. Spróbuj ponownie.");
+      if (typeof result.reply !== "string" || !result.reply.trim()) throw new Error("Nie otrzymano odpowiedzi. Spróbuj ponownie.");
       const mood = isMotivation ? "motivating" : "explaining";
       state.currentChat.messages.push({ role: "assistant", text: result.reply.trim(), mood });
       state.currentChat.updatedAt = new Date().toISOString();
@@ -1236,6 +1263,7 @@
   });
 
   loadState();
+  setDashboardGreeting();
   $("#nexiIntroMascot").append(makeMascot());
   $("#mascotHome").append(makeMascot());
   $("#nexiWelcome").hidden = true;
