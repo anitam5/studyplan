@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="intro-open">
+<body class="intro-open device-choice-open">
   <div class="app-shell" id="appShell" inert>
     <aside class="sidebar">
       <a class="brand" href="#" aria-label="studyplan — strona główna">
@@ -45,8 +45,9 @@
       <header class="topbar">
         <div class="breadcrumb">Workspace <span>/</span> <strong>Mój tydzień</strong></div>
         <div class="topbar-actions">
-          <button id="exportBtn" class="button button-quiet" type="button" title="Zapisz kopię swoich danych">↥ <span>Eksportuj</span></button>
-          <button id="importBtn" class="button button-quiet" type="button" title="Wczytaj kopię danych">↧ <span>Importuj</span></button>
+          <button id="exportBtn" class="button button-quiet" type="button" aria-label="Eksportuj dane" title="Zapisz kopię swoich danych">↥ <span>Eksportuj</span></button>
+          <button id="importBtn" class="button button-quiet" type="button" aria-label="Importuj dane" title="Wczytaj kopię danych">↧ <span>Importuj</span></button>
+          <button id="deviceModeBtn" class="button button-quiet device-mode-button" type="button" aria-label="Zmień wersję urządzenia" title="Zmień wersję urządzenia">▣ <span>Zmień widok</span></button>
           <input type="file" id="importFile" accept=".json,application/json" hidden />
           <div class="top-avatar">U</div>
         </div>
@@ -158,6 +159,31 @@
       <div class="dialog-actions"><button id="cancelSubject" class="button button-quiet" type="button">Anuluj</button><button class="button button-primary" type="submit">Dodaj przedmiot</button></div>
     </form>
   </dialog>
+  <section id="deviceChoice" class="device-choice" role="dialog" aria-modal="true" aria-labelledby="deviceChoiceTitle">
+    <div class="device-choice-glow" aria-hidden="true"></div>
+    <div class="device-choice-content">
+      <a class="device-choice-brand" href="#" aria-label="studyplan">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8m-8 4h6"/></svg></span>
+        <span>study<span class="brand-accent">plan</span></span>
+      </a>
+      <p class="device-choice-eyebrow">WITAJ W STUDYPLAN</p>
+      <h1 id="deviceChoiceTitle">Jak chcesz korzystać z planera?</h1>
+      <p class="device-choice-description">Wybierz układ dopasowany do urządzenia. Możesz zmienić go później.</p>
+      <div class="device-choice-options">
+        <button class="device-choice-option" type="button" data-device-mode="mobile">
+          <span class="device-preview phone-preview" aria-hidden="true"><i></i><b></b><em></em><small></small></span>
+          <span class="device-choice-option-copy"><strong>Telefon</strong><small>Wygodny układ i nawigacja pod kciuk</small></span>
+          <span class="device-choice-arrow" aria-hidden="true">→</span>
+        </button>
+        <button class="device-choice-option" type="button" data-device-mode="desktop">
+          <span class="device-preview desktop-preview" aria-hidden="true"><i></i><b></b><em></em><small></small></span>
+          <span class="device-choice-option-copy"><strong>Komputer</strong><small>Pełny widok z bocznym menu</small></span>
+          <span class="device-choice-arrow" aria-hidden="true">→</span>
+        </button>
+      </div>
+      <p class="device-choice-note">W każdej chwili możesz zmienić widok w górnym pasku.</p>
+    </div>
+  </section>
   <section id="nexiWelcome" class="nexi-welcome" role="dialog" aria-modal="true" aria-labelledby="nexiWelcomeTitle">
     <div class="nexi-welcome-glow" aria-hidden="true"></div>
     <div class="nexi-welcome-content">
