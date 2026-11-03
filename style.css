@@ -216,6 +216,130 @@ footer span { padding: 0 4px; }
 @media (max-width: 580px) { .tutor-panel { padding: 13px; }.tutor-intro { align-items: flex-start; gap: 9px; }.tutor-avatar { width: 39px; height: 39px; font-size: 20px; }.tutor-intro h2 { font-size: 15px; }.tutor-intro p:last-child { font-size: 9px; }.local-badge { padding: 5px 6px; font-size: 8px; }.chat-message { max-width: 96%; }.chat-form .button { padding: 8px; }.chat-form input { font-size: 10px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 
+/* eStudyante's warm study-desk details */
+:root {
+  --study-orange: #f28c38;
+  --study-orange-deep: #cc6927;
+  --study-cream: #fff5e8;
+  --study-peach: #ffe4c7;
+}
+body {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(204, 105, 39, .075) 1px, transparent 1.4px),
+    radial-gradient(ellipse at 92% 8%, rgba(255, 201, 145, .22), transparent 30%);
+  background-size: 24px 24px, auto;
+}
+.brand { gap: 9px; margin-bottom: 36px; }
+.brand-mark.fox-brand-mark {
+  width: 38px;
+  height: 38px;
+  border: 2px solid #fff0df;
+  border-radius: 13px;
+  background: #ffe5ca;
+  box-shadow: 0 5px 13px rgba(204, 105, 39, .2), inset 0 0 0 1px rgba(255, 255, 255, .8);
+}
+.fox-brand-mark svg { width: 31px; height: 31px; overflow: visible; }
+.fox-icon-fur { fill: #f28c38; stroke: #c86d34; stroke-width: 1.4; stroke-linejoin: round; }
+.fox-icon-ear { fill: #ffd2a6; }
+.fox-icon-muzzle { fill: #fff5e8; }
+.fox-icon-nose { fill: #75462f; }
+.brand-accent, .device-choice-brand .brand-accent { color: var(--study-orange); }
+.breadcrumb-brand { color: #49372b; font-weight: 900; letter-spacing: -.3px; }
+.sidebar {
+  border-right-color: #f0dfcd;
+  background:
+    linear-gradient(180deg, rgba(255, 247, 237, .42), transparent 28%),
+    #fff;
+}
+.sidebar-label { color: #a16f4a; }
+.nav-link { border-radius: 11px; }
+.nav-link.active {
+  background: linear-gradient(100deg, #fff0df, #fff8f0);
+  box-shadow: inset 3px 0 #f28c38;
+}
+.nav-icon { color: #c27543; }
+.sidebar-note {
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(157, 95, 43, .07);
+}
+.sidebar-note::after {
+  content: "✦";
+  position: absolute;
+  right: 12px;
+  bottom: -19px;
+  color: rgba(204, 105, 39, .13);
+  font-size: 68px;
+  line-height: 1;
+  pointer-events: none;
+}
+.profile { border-top-color: #f0dfcd; }
+.avatar, .top-avatar {
+  border: 2px solid #fff;
+  background: #ffe5ca;
+  color: var(--study-orange-deep);
+  box-shadow: 0 2px 8px rgba(157, 95, 43, .12);
+}
+.main-content { position: relative; }
+.topbar { border-bottom-color: #eedfce; }
+.welcome-row { position: relative; }
+.welcome-row::after {
+  content: "✦  ·  ✧";
+  position: absolute;
+  top: 27px;
+  right: 5px;
+  color: rgba(204, 105, 39, .25);
+  font-size: 19px;
+  letter-spacing: 8px;
+  pointer-events: none;
+}
+.welcome-row > * { position: relative; z-index: 1; }
+.eyebrow { color: #a66a3c; }
+.wave { color: var(--study-orange); }
+.panel, .stat-card {
+  position: relative;
+  border-color: #f0e2d3;
+  border-radius: 16px;
+  box-shadow: 0 7px 22px rgba(91, 61, 36, .055), 0 1px 3px rgba(91, 61, 36, .04);
+}
+.panel::before, .stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 18px;
+  width: 42px;
+  height: 3px;
+  border-radius: 0 0 5px 5px;
+  background: linear-gradient(90deg, #f28c38, #ffd09d);
+}
+.stat-card { overflow: hidden; }
+.stat-card::after {
+  content: "✧";
+  position: absolute;
+  top: 8px;
+  right: 13px;
+  color: rgba(204, 105, 39, .17);
+  font-size: 25px;
+  pointer-events: none;
+}
+.stat-icon { border: 1px solid rgba(204, 105, 39, .08); }
+.button-primary {
+  border: 1px solid #dc792f;
+  background: linear-gradient(135deg, #f59a4c, #e87927);
+}
+.button-primary:hover { background: linear-gradient(135deg, #ec8b3b, #d96f24); }
+.device-choice-brand .brand-mark.fox-brand-mark { width: 42px; height: 42px; }
+.device-choice-brand .fox-brand-mark svg { width: 35px; height: 35px; }
+.device-choice-option {
+  box-shadow: 0 7px 18px rgba(91, 61, 36, .045);
+}
+.device-choice-option:hover { box-shadow: 0 10px 24px rgba(204, 105, 39, .13); }
+@media (max-width: 580px) {
+  .welcome-row::after { top: 8px; right: 0; font-size: 14px; }
+  .panel, .stat-card { border-radius: 13px; }
+}
+
 /* Warm orange-and-cream theme */
 body { background: var(--canvas); color: #302821; }
 .sidebar { background: #fffaf2; border-color: #efe5d8; }

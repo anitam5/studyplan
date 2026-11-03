@@ -1,0 +1,18 @@
+{
+  "name": "eStudyante",
+  "short_name": "eStudyante",
+  "description": "Twój przyjazny planer nauki.",
+  "start_url": "./#dashboard",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFF5E8",
+  "theme_color": "#F28C38",
+  "icons": [
+    {
+      "src": "fox-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
