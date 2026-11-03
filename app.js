@@ -38,6 +38,7 @@
   let toastTimer;
   let mascotTimer;
   let mascotIdleTimer;
+  let mascotInstanceCount = 0;
   let chatRequestPending = false;
   let selectedArchiveId = null;
   let welcomeStarted = false;
@@ -711,7 +712,25 @@
   }
 
   function makeMascot() {
-    return $("#mascotTemplate").content.firstElementChild.cloneNode(true);
+    const mascot = $("#mascotTemplate").content.firstElementChild.cloneNode(true);
+    const idMap = new Map();
+    const instanceId = ++mascotInstanceCount;
+
+    mascot.querySelectorAll("[id]").forEach((element) => {
+      idMap.set(element.id, `${element.id}-${instanceId}`);
+      element.id = `${element.id}-${instanceId}`;
+    });
+    mascot.querySelectorAll("*").forEach((element) => {
+      Array.from(element.attributes).forEach((attribute) => {
+        const value = attribute.value.replace(/url\(#([^)]+)\)|^#(.+)$/, (reference, urlId, directId) => {
+          const uniqueId = idMap.get(urlId || directId);
+          if (!uniqueId) return reference;
+          return urlId ? `url(#${uniqueId})` : `#${uniqueId}`;
+        });
+        if (value !== attribute.value) element.setAttribute(attribute.name, value);
+      });
+    });
+    return mascot;
   }
 
   function setDashboardGreeting() {
