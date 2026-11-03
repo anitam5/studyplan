@@ -23,7 +23,7 @@
         <a class="nav-link active" href="#dashboard" data-view="dashboard"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M8 3.5v4M16 3.5v4M4 9.5h16M8 13h3m2 0h3m-8 4h3m2 0h3"/></svg></span> Mój tydzień</a>
         <a class="nav-link" href="#materials" data-view="materials"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C9.8 4.7 6.6 4 3.5 4.7v14c3.1-.7 6.3 0 8.5 1.8m0-14c2.2-1.8 5.4-2.5 8.5-1.8v14c-3.1-.7-6.3 0-8.5 1.8m0-14v14"/></svg></span> Materiały <span class="nav-count" id="subjectCount">0</span></a>
         <a class="nav-link" href="#availability" data-view="availability"><span class="nav-icon">◷</span> Dostępność</a>
-        <a class="nav-link" href="#tutor" data-view="tutor"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c.9 4.2 2.3 5.6 6.5 6.5-4.2.9-5.6 2.3-6.5 6.5-.9-4.2-2.3-5.6-6.5-6.5 4.2-.9 5.6-2.3 6.5-6.5Z"/><path d="M19 15.5c.4 1.8 1.2 2.6 3 3-.8.2-1.3.4-1.8.9-.6.5-.9 1.1-1.2 2.1-.4-1.8-1.2-2.6-3-3 1.8-.4 2.6-1.2 3-3ZM5 2.5c.3 1.4.9 2 2.3 2.3-1.4.3-2 .9-2.3 2.3-.3-1.4-.9-2-2.3-2.3C4.1 4.5 4.7 3.9 5 2.5Z"/></svg></span> Kiro <span class="nav-ai-label">AI</span></a>
+        <a class="nav-link" href="#tutor" data-view="tutor"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c.9 4.2 2.3 5.6 6.5 6.5-4.2.9-5.6 2.3-6.5 6.5-.9-4.2-2.3-5.6-6.5-6.5 4.2-.9 5.6-2.3 6.5-6.5Z"/><path d="M19 15.5c.4 1.8 1.2 2.6 3 3-.8.2-1.3.4-1.8.9-.6.5-.9 1.1-1.2 2.1-.4-1.8-1.2-2.6-3-3 1.8-.4 2.6-1.2 3-3ZM5 2.5c.3 1.4.9 2 2.3 2.3-1.4.3-2 .9-2.3 2.3-.3-1.4-.9-2-2.3-2.3C4.1 4.5 4.7 3.9 5 2.5Z"/></svg></span> Eduo <span class="nav-ai-label">AI</span></a>
         <a class="nav-link" href="#archive" data-view="archive"><span class="nav-icon">◴</span> Archiwum <span class="nav-count" id="archiveCount">0</span></a>
       </nav>
 
@@ -115,23 +115,23 @@
       <section id="tutor" class="panel tutor-panel">
         <div class="tutor-intro">
           <div id="mascotHome" class="tutor-avatar mascot--idle" aria-hidden="true"></div>
-          <div><p class="eyebrow">TWÓJ POMOCNIK W NAUCE</p><h2>Ucz się z Kiro</h2><p>Zapytaj o dowolny temat szkolny — od podstawówki po szkołę ponadpodstawową.</p></div>
-          <span id="aiStatus" class="local-badge" role="status">Łączę z Kiro…</span>
+          <div><p class="eyebrow">TWÓJ POMOCNIK W NAUCE</p><h2>Ucz się z Eduo</h2><p>Zapytaj o dowolny temat szkolny — od podstawówki po szkołę ponadpodstawową.</p></div>
+          <span id="aiStatus" class="local-badge" role="status">Łączę z Eduo…</span>
         </div>
         <div class="conversation-toolbar"><span id="conversationTitle">Nowa rozmowa</span><button id="newChatBtn" class="button button-quiet" type="button">＋ Nowa rozmowa</button></div>
         <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
         <div class="chat-suggestions"><span>Spróbuj:</span><button type="button" data-prompt="Wyjaśnij mi ułamki zwykłe">Ułamki zwykłe</button><button type="button" data-prompt="Jak działa fotosynteza?">Fotosynteza</button><button type="button" data-prompt="Jak rozwiązywać równania?">Równania</button><button type="button" data-prompt="Potrzebuję motywacji">Potrzebuję motywacji 💪</button></div>
         <form id="chatForm" class="chat-form">
-          <label class="visually-hidden" for="chatInput">Zapytaj Kiro</label>
+          <label class="visually-hidden" for="chatInput">Zapytaj Eduo</label>
           <input id="chatInput" maxlength="2000" placeholder="Napisz, co jest trudne — np. „Nie rozumiem fotosyntezy”" required />
           <button id="sendChatBtn" type="submit" class="button button-primary">Zapytaj <span>➜</span></button>
         </form>
-        <p class="tutor-disclaimer">Kiro korzysta z modelu AI. Nie wpisuj danych osobowych — wiadomości są wysyłane do skonfigurowanego dostawcy AI.</p>
+        <p class="tutor-disclaimer">Eduo korzysta z modelu AI. Nie wpisuj danych osobowych — wiadomości są wysyłane do skonfigurowanego dostawcy AI.</p>
       </section>
       </section>
       <section id="view-archive" class="app-view">
         <section class="panel archive-panel">
-          <div class="panel-heading"><div><p class="eyebrow">ZAPISANE ROZMOWY</p><h2>Archiwum Kiro</h2></div><span id="archiveCountHeading" class="counter-pill">0</span></div>
+          <div class="panel-heading"><div><p class="eyebrow">ZAPISANE ROZMOWY</p><h2>Archiwum Eduo</h2></div><span id="archiveCountHeading" class="counter-pill">0</span></div>
           <p class="panel-description">Poprzednie rozmowy zapisują się tutaj, gdy zaczynasz nową. Otwórz dowolną, żeby wrócić do nauki.</p>
           <div class="archive-retention">
             <div><label for="archiveRetention">Automatyczne usuwanie starych rozmów</label><p>Liczymy czas od ostatniej aktywności w rozmowie.</p></div>
@@ -146,7 +146,7 @@
           <div class="archive-layout"><div id="archiveList" class="archive-list"></div><div id="archivePreview" class="archive-preview"><div class="empty-list">Wybierz rozmowę z archiwum, aby ją przeczytać.</div></div></div>
         </section>
       </section>
-      <footer>Plan i archiwum zapisują się na tym urządzeniu; wiadomości do Kiro trafiają do dostawcy AI <span>·</span> Ucz się mądrze, nie dłużej ✦</footer>
+      <footer>Plan i archiwum zapisują się na tym urządzeniu; wiadomości do Eduo trafiają do dostawcy AI <span>·</span> Ucz się mądrze, nie dłużej ✦</footer>
     </main>
   </div>
   <dialog id="subjectDialog" class="subject-dialog">
@@ -164,7 +164,7 @@
       <div id="nexiIntroMascot" class="tutor-avatar mascot--thinking" aria-hidden="true"></div>
       <div class="nexi-welcome-copy">
         <p class="nexi-welcome-eyebrow">TWÓJ TOWARZYSZ W NAUCE</p>
-        <h1 id="nexiWelcomeTitle">Cześć, jestem <span>Kiro</span><i class="nexi-welcome-star">✦</i></h1>
+        <h1 id="nexiWelcomeTitle">Cześć, jestem <span>Eduo</span><i class="nexi-welcome-star">✦</i></h1>
         <p class="nexi-mood-line" id="nexiMoodLine">Hmm… czego dziś razem się nauczymy?</p>
         <p class="nexi-welcome-description">Pomogę Ci zaplanować naukę, wyjaśnię trudne tematy i będę trzymać za Ciebie kciuki.</p>
         <button id="enterPlanner" class="nexi-enter-button" type="button">Zaczynamy <span aria-hidden="true">→</span></button>
@@ -175,7 +175,7 @@
     <span class="nexi-welcome-spark nexi-welcome-spark-two" aria-hidden="true">✧</span>
   </section>
   <template id="mascotTemplate">
-    <svg class="mascot-svg" viewBox="0 0 80 80" role="img" aria-label="Kiro, przyjazny pomarańczowy lisek">
+    <svg class="mascot-svg" viewBox="0 0 80 80" role="img" aria-label="Eduo, przyjazny pomarańczowy lisek">
       <defs>
         <radialGradient id="mascotFur" cx="34%" cy="20%" r="82%">
           <stop offset="0" stop-color="#FFB35F"/>

@@ -1001,7 +1001,7 @@ body.intro-open { overflow: hidden; }
   .archive-preview-heading .button { width: 100%; }
 }
 
-/* Softer, more lifelike movement for Kiro */
+/* Softer, more lifelike movement for Eduo */
 .mascot-svg { overflow: visible; filter: drop-shadow(0 2px 2px rgba(112, 67, 33, .08)); }
 .mascot-body {
   transform-box: fill-box;
@@ -1153,7 +1153,7 @@ body.intro-open { overflow: hidden; }
   .mascot--curious .mascot-brow-left, .mascot--curious .mascot-brow-right { transform: none; }
 }
 
-/* Let Kiro move freely, without an avatar tile */
+/* Let Eduo move freely, without an avatar tile */
 .tutor-avatar {
   width: 104px;
   height: 108px;
