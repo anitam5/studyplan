@@ -805,7 +805,9 @@
         const end = minutesOf(interval.end);
         if (key === today && end <= currentMinutes) continue;
         let slotStart = minutesOf(interval.start);
-        if (key === today) slotStart = Math.max(slotStart, Math.ceil(currentMinutes / 60) * 60);
+        if (key === today) {
+          slotStart = Math.max(slotStart, Math.ceil(currentMinutes / 60) * 60);
+        }
         while (slotStart < end) {
           const slotEnd = Math.min(slotStart + 50, end);
           const conflict = busy.some(([busyStart, busyEnd]) => slotStart < busyEnd + 10 && slotEnd + 10 > busyStart);
