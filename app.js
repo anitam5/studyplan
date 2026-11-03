@@ -30,6 +30,7 @@
   let mascotIdleTimer;
   let chatRequestPending = false;
   let selectedArchiveId = null;
+  let legacyNameMigrated = false;
   let weekStart = mondayOf(new Date());
   let state = { subjects: [], tasks: [], sessions: [], availability: defaultAvailability(), generated: false, archiveRetention: "off", currentChat: createConversation(), chatSessions: [] };
 
@@ -45,16 +46,22 @@
     return { id: makeId(), title: "Nowa rozmowa", createdAt: now, updatedAt: now, messages };
   }
 
+  function migrateAssistantName(text) {
+    const updatedText = text.replace(/\bkiro\b/gi, "Eduo");
+    if (updatedText !== text) legacyNameMigrated = true;
+    return updatedText;
+  }
+
   function normalizeConversation(conversation) {
     if (!conversation || typeof conversation !== "object") return null;
     const messages = Array.isArray(conversation.messages) ? conversation.messages : [];
     const normalizedMessages = messages
       .filter((item) => item && ["user", "assistant"].includes(item.role) && typeof (item.text ?? item.content) === "string")
       .slice(-40)
-      .map((item) => ({ role: item.role, text: String(item.text ?? item.content).slice(0, 8000), mood: typeof item.mood === "string" ? item.mood : "idle" }));
+      .map((item) => ({ role: item.role, text: migrateAssistantName(String(item.text ?? item.content)).slice(0, 8000), mood: typeof item.mood === "string" ? item.mood : "idle" }));
     return {
       id: typeof conversation.id === "string" ? conversation.id : makeId(),
-      title: typeof conversation.title === "string" && conversation.title.trim() ? conversation.title.slice(0, 60) : "Rozmowa z Eduo",
+      title: typeof conversation.title === "string" && conversation.title.trim() ? migrateAssistantName(conversation.title).slice(0, 60) : "Rozmowa z Eduo",
       createdAt: typeof conversation.createdAt === "string" ? conversation.createdAt : new Date().toISOString(),
       updatedAt: typeof conversation.updatedAt === "string" ? conversation.updatedAt : new Date().toISOString(),
       messages: normalizedMessages
@@ -70,7 +77,7 @@
       const legacyMessages = parsed.chat
         .filter((item) => item && ["user", "assistant"].includes(item.role) && typeof item.text === "string")
         .slice(-40)
-        .map((item) => ({ role: item.role, text: item.text.slice(0, 8000), mood: item.mood || "idle" }));
+        .map((item) => ({ role: item.role, text: migrateAssistantName(item.text).slice(0, 8000), mood: item.mood || "idle" }));
       if (legacyMessages.length) {
         const firstQuestion = legacyMessages.find((message) => message.role === "user")?.text;
         const legacyChat = createConversation(legacyMessages);
@@ -197,6 +204,7 @@
         archiveRetention: ["off", ...Object.keys(ARCHIVE_RETENTION_MS)].includes(parsed.archiveRetention) ? parsed.archiveRetention : "off",
         ...conversationsFromData(parsed)
       };
+      if (legacyNameMigrated) saveState();
     } catch (error) {
       console.error("Nie udało się odczytać danych planera.", error);
       showToast("Zapisane dane są nieprawidłowe. Rozpoczynamy nowy plan.");
