@@ -530,7 +530,7 @@
     messages.replaceChildren();
     $("#conversationTitle").textContent = state.currentChat.title || "Nowa rozmowa";
     if (!state.currentChat.messages.length) {
-      addChatMessage("assistant", "Cześć! Jestem Eduo ✨ Napisz, co sprawia Ci trudność. Wyjaśnię temat prosto, pokażę przykład i pomogę Ci go zrozumieć.", "idle");
+      addChatMessage("assistant", "Cześć! Jestem Eduo ✨ Napisz, co sprawia Ci trudność. Wyjaśnię temat prosto, pokażę przykład i pomogę Ci go zrozumieć.\n\n— Eduo", "idle");
       return;
     }
     state.currentChat.messages.forEach((message) => addChatMessage(message.role, message.text, message.mood || "idle"));
