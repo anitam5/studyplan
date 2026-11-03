@@ -30,6 +30,7 @@
   let mascotIdleTimer;
   let chatRequestPending = false;
   let selectedArchiveId = null;
+  let welcomeStarted = false;
   let legacyNameMigrated = false;
   let weekStart = mondayOf(new Date());
   let state = { subjects: [], tasks: [], sessions: [], availability: defaultAvailability(), generated: false, archiveRetention: "off", currentChat: createConversation(), chatSessions: [] };
@@ -703,6 +704,29 @@
     return $("#mascotTemplate").content.firstElementChild.cloneNode(true);
   }
 
+  function openDeviceChoice() {
+    $("#appShell").inert = true;
+    $("#deviceChoice").hidden = false;
+    document.body.classList.add("device-choice-open");
+    $('.device-choice-option[data-device-mode="mobile"]').focus();
+  }
+
+  function chooseDeviceMode(mode) {
+    if (!["mobile", "desktop"].includes(mode)) return;
+    document.body.classList.toggle("device-mobile", mode === "mobile");
+    document.body.classList.toggle("device-desktop", mode === "desktop");
+    document.body.classList.remove("device-choice-open");
+    $("#deviceChoice").hidden = true;
+    if (welcomeStarted) {
+      $("#appShell").inert = false;
+      document.querySelector('.main-nav .nav-link[data-view="dashboard"]').focus();
+      return;
+    }
+    welcomeStarted = true;
+    $("#nexiWelcome").hidden = false;
+    startWelcomeIntro();
+  }
+
   function startWelcomeIntro() {
     const welcome = $("#nexiWelcome");
     const mascot = $("#nexiIntroMascot");
@@ -733,7 +757,8 @@
       setTimeout(() => {
         welcome.hidden = true;
         $("#appShell").inert = false;
-        document.querySelector('.main-nav .nav-link[data-view="dashboard"]').focus();
+        window.scrollTo(0, 0);
+        document.querySelector('.main-nav .nav-link[data-view="dashboard"]').focus({ preventScroll: true });
       }, 500);
     };
     $("#enterPlanner").addEventListener("click", closeIntro, { once: true });
@@ -1151,6 +1176,10 @@
     $("#subjectDialog").close();
   });
   $("#cancelSubject").addEventListener("click", () => $("#subjectDialog").close());
+  $("#deviceModeBtn").addEventListener("click", openDeviceChoice);
+  document.querySelectorAll(".device-choice-option").forEach((button) => {
+    button.addEventListener("click", () => chooseDeviceMode(button.dataset.deviceMode));
+  });
   $("#addSubjectShortcut").addEventListener("click", openSubjectDialog);
   $("#addSubjectInline").addEventListener("click", openSubjectDialog);
   $("#taskForm").addEventListener("submit", addTask);
@@ -1209,7 +1238,7 @@
   loadState();
   $("#nexiIntroMascot").append(makeMascot());
   $("#mascotHome").append(makeMascot());
-  startWelcomeIntro();
+  $("#nexiWelcome").hidden = true;
   applyArchiveRetention();
   scheduleMascotGesture();
   renderAll();
