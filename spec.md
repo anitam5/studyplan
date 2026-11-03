@@ -4,7 +4,7 @@
 
 ## Cel produktu
 
-<!-- Jaki problem rozwiązuje Studyplan i dla kogo? -->
+Dla uczniów szkół podstawowych i ponadpodstawowych, pomaga w planowaniu nauki, generowaniu notatek i tłumaczeniu trudnych zagadnień.
 
 ## Wizja i zakres
 
