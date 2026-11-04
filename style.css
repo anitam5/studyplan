@@ -970,8 +970,9 @@ body.intro-open { overflow: hidden; }
   color: #ffd2a6;
   font-size: 19px;
   font-weight: 800;
-  transition: opacity .2s ease;
+  transition: opacity .38s ease, transform .38s cubic-bezier(.2, .75, .25, 1), filter .38s ease;
 }
+.nexi-mood-line--changing { opacity: 0; transform: translateY(9px); filter: blur(5px); }
 .nexi-welcome-description {
   max-width: 390px;
   margin: 0;
@@ -1004,6 +1005,7 @@ body.intro-open { overflow: hidden; }
 .nexi-welcome-spark-one { top: 18%; left: 17%; font-size: 25px; animation: nexi-star-twinkle 2.7s ease-in-out infinite; }
 .nexi-welcome-spark-two { right: 17%; bottom: 19%; color: #f2b18a; font-size: 33px; animation: nexi-star-twinkle 3.2s .5s ease-in-out infinite; }
 @keyframes nexi-arrive { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes welcome-text-in { from { opacity: 0; transform: translateY(15px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
 @keyframes nexi-float { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-9px) rotate(1deg); } }
 @keyframes nexi-glow { 0%, 100% { opacity: .72; transform: scale(.96); } 50% { opacity: 1; transform: scale(1.04); } }
 @keyframes nexi-book-bob { 0%, 100% { transform: translateY(1px) rotate(0); } 50% { transform: translateY(-2px) rotate(-2deg); } }
@@ -1032,7 +1034,16 @@ body.intro-open { overflow: hidden; }
   .nexi-welcome *,
   .nexi-welcome *::before,
   .nexi-welcome *::after { animation: none !important; }
+  .nexi-mood-line { transition: none; }
 }
+.nexi-welcome-copy > * { animation: none; }
+.nexi-welcome:not([hidden]) .nexi-welcome-copy > * { animation: welcome-text-in .7s cubic-bezier(.2, .75, .25, 1) both; }
+.nexi-welcome:not([hidden]) .nexi-welcome-copy > :nth-child(1) { animation-delay: .18s; }
+.nexi-welcome:not([hidden]) .nexi-welcome-copy > :nth-child(2) { animation-delay: .32s; }
+.nexi-welcome:not([hidden]) .nexi-welcome-copy > :nth-child(3) { animation-delay: .48s; }
+.nexi-welcome:not([hidden]) .nexi-welcome-copy > :nth-child(4) { animation-delay: .62s; }
+.nexi-welcome:not([hidden]) .nexi-welcome-copy > :nth-child(5) { animation-delay: .76s; }
+.nexi-welcome:not([hidden]) .nexi-welcome-copy > :nth-child(6) { animation-delay: .9s; }
 
 .availability-list { gap: 12px; }
 .availability-day {
@@ -1500,12 +1511,23 @@ body.device-choice-open { overflow: hidden; }
 .device-choice-brand .brand-mark { width: 36px; height: 36px; }
 .device-choice-brand .brand-accent { color: #e87927; }
 .device-choice-eyebrow {
-  margin: 0 0 9px;
+  position: relative;
+  display: table;
+  margin: 0 auto 15px;
+  padding: 9px 18px;
+  border: 1px solid rgba(189, 113, 54, .2);
+  border-radius: 999px;
+  background: rgba(255, 253, 250, .76);
+  box-shadow: 0 7px 19px rgba(157, 95, 43, .09);
   color: #bd7136;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 2px;
+  transform-origin: center;
+  animation: welcome-bubble-expand .8s cubic-bezier(.18, .89, .32, 1.24) both;
 }
+.device-choice-eyebrow::after { position: absolute; bottom: -5px; left: 50%; width: 9px; height: 9px; border-right: 1px solid rgba(189, 113, 54, .2); border-bottom: 1px solid rgba(189, 113, 54, .2); background: #fffaf3; content: ""; transform: translateX(-50%) rotate(45deg); }
+@keyframes welcome-bubble-expand { from { opacity: 0; transform: scale(.35); } 70% { opacity: 1; transform: scale(1.06); } to { opacity: 1; transform: scale(1); } }
 .device-choice-content h1 {
   margin: 0;
   color: #34271e;
