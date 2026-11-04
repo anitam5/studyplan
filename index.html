@@ -15,7 +15,7 @@
 </head>
 <body class="intro-open device-choice-open">
   <div class="app-shell" id="appShell" inert>
-    <aside class="sidebar">
+    <aside id="appSidebar" class="sidebar">
       <a class="brand" href="#" aria-label="eStudyante — strona główna">
         <span class="brand-mark fox-brand-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path class="fox-icon-fur" d="M8 20 7 7l13 8a17 17 0 0 1 8 0l13-8-1 16c-1 11-7 17-16 20C15 40 9 32 8 20Z"/><path class="fox-icon-ear" d="m11 12 8 5-7 3zm26 0-8 5 7 3z"/><path class="fox-icon-muzzle" d="M13 25c4-3 8-2 11 1 3-3 7-4 11-1-1 6-5 9-11 11-6-2-10-5-11-11Z"/><path class="fox-icon-eye" d="M15.5 24c1.6-3.5 4.4-3.5 6 0"/><path class="fox-icon-eye" d="M27.5 24c1.6-3.5 4.4-3.5 6 0"/><path class="fox-icon-nose" d="M22 27q2-2 4 0l-2 2z"/><path class="fox-icon-smile" d="M24 29v1.3c-1 1.3-2.2 1.4-3.2.6m3.2-.6c1 1.3 2.2 1.4 3.2.6"/></svg></span>
         <span>e<span class="brand-accent">study</span>ante</span>
@@ -43,9 +43,13 @@
         <span class="profile-dot"></span>
       </div>
     </aside>
+    <button id="sidebarBackdrop" class="sidebar-backdrop" type="button" aria-label="Zamknij menu" hidden></button>
 
     <main id="dashboard" class="main-content">
       <header class="topbar">
+        <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Otwórz menu nawigacji" aria-controls="appSidebar" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
         <div class="breadcrumb"><span class="breadcrumb-brand">e<span class="brand-accent">study</span>ante</span> <span>/</span> <strong>Mój tydzień</strong></div>
         <div class="topbar-actions">
           <button id="exportBtn" class="button button-quiet" type="button" aria-label="Eksportuj dane" title="Zapisz kopię swoich danych">↥ <span>Eksportuj</span></button>
