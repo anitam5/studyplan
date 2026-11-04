@@ -807,10 +807,20 @@
     ];
     let moodIndex = 0;
     let isClosing = false;
+    let moodTransitionTimer;
     const showMood = () => {
       const mood = moods[moodIndex];
       mascot.className = `tutor-avatar mascot--${mood.name}`;
-      moodLine.textContent = mood.text;
+      clearTimeout(moodTransitionTimer);
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        moodLine.textContent = mood.text;
+      } else {
+        moodLine.classList.add("nexi-mood-line--changing");
+        moodTransitionTimer = setTimeout(() => {
+          moodLine.textContent = mood.text;
+          moodLine.classList.remove("nexi-mood-line--changing");
+        }, 220);
+      }
       moodIndex = (moodIndex + 1) % moods.length;
     };
     const moodTimer = setInterval(showMood, 2200);
@@ -818,6 +828,8 @@
       if (isClosing) return;
       isClosing = true;
       clearInterval(moodTimer);
+      clearTimeout(moodTransitionTimer);
+      moodLine.classList.remove("nexi-mood-line--changing");
       document.body.classList.remove("intro-open");
       welcome.classList.add("nexi-welcome--leaving");
       welcome.setAttribute("aria-hidden", "true");
