@@ -759,6 +759,7 @@
 
   function chooseDeviceMode(mode) {
     if (!["mobile", "desktop"].includes(mode)) return;
+    closeMobileNav({ restoreFocus: false });
     document.body.classList.toggle("device-mobile", mode === "mobile");
     document.body.classList.toggle("device-desktop", mode === "desktop");
     document.body.classList.remove("device-choice-open");
@@ -771,6 +772,26 @@
     welcomeStarted = true;
     $("#nexiWelcome").hidden = false;
     startWelcomeIntro();
+  }
+
+  function setMobileNavOpen(open, restoreFocus = true) {
+    const toggle = $("#mobileNavToggle");
+    const backdrop = $("#sidebarBackdrop");
+    document.body.classList.toggle("mobile-nav-open", open);
+    backdrop.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", open ? "Zamknij menu nawigacji" : "Otwórz menu nawigacji");
+    if (open) {
+      document.querySelector(".main-nav .nav-link.active")?.focus();
+    } else if (restoreFocus) {
+      toggle.focus();
+    }
+  }
+
+  function closeMobileNav({ restoreFocus = true } = {}) {
+    if (document.body.classList.contains("mobile-nav-open")) {
+      setMobileNavOpen(false, restoreFocus);
+    }
   }
 
   function startWelcomeIntro() {
@@ -1223,6 +1244,29 @@
   });
   $("#cancelSubject").addEventListener("click", () => $("#subjectDialog").close());
   $("#deviceModeBtn").addEventListener("click", openDeviceChoice);
+  $("#mobileNavToggle").addEventListener("click", () => {
+    setMobileNavOpen(!document.body.classList.contains("mobile-nav-open"));
+  });
+  $("#sidebarBackdrop").addEventListener("click", () => closeMobileNav());
+  document.addEventListener("keydown", (event) => {
+    if (!document.body.classList.contains("mobile-nav-open")) return;
+    if (event.key === "Escape") {
+      closeMobileNav();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const sidebar = $("#appSidebar");
+    const focusable = sidebar.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !sidebar.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
   document.querySelectorAll(".device-choice-option").forEach((button) => {
     button.addEventListener("click", () => chooseDeviceMode(button.dataset.deviceMode));
   });
@@ -1273,6 +1317,7 @@
     link.addEventListener("click", (event) => {
       event.preventDefault();
       switchView(link.dataset.view);
+      closeMobileNav();
     });
   });
   window.addEventListener("hashchange", () => switchView(window.location.hash.slice(1)));
