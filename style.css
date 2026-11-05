@@ -1013,7 +1013,19 @@ body.intro-open { overflow: hidden; }
 @media (max-width: 700px) {
   .nexi-welcome { padding: 26px 22px; }
   .nexi-welcome-content { grid-template-columns: minmax(0, 1fr); gap: 4px; justify-items: center; text-align: center; }
-  .nexi-welcome .tutor-avatar { width: min(56vw, 230px); }
+  .nexi-welcome .tutor-avatar,
+  body.device-mobile .nexi-welcome .tutor-avatar {
+    width: min(76vw, 330px);
+    height: auto;
+    aspect-ratio: 1;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .nexi-welcome .tutor-avatar .mascot-svg,
+  body.device-mobile .nexi-welcome .tutor-avatar .mascot-svg {
+    filter: drop-shadow(0 0 22px rgba(242, 140, 56, .38));
+  }
   .nexi-welcome-copy h1 { font-size: clamp(37px, 10vw, 52px); }
   .nexi-welcome-eyebrow { margin-bottom: 9px; font-size: 10px; }
   .nexi-mood-line { margin-top: 13px; font-size: 16px; }
@@ -1022,6 +1034,10 @@ body.intro-open { overflow: hidden; }
   .nexi-welcome-footnote { margin-top: 12px; font-size: 11px; }
   .nexi-welcome-spark-one { top: 8%; left: 9%; }
   .nexi-welcome-spark-two { right: 8%; bottom: 8%; }
+}
+@media (max-width: 400px) {
+  .nexi-welcome .tutor-avatar,
+  body.device-mobile .nexi-welcome .tutor-avatar { width: min(84vw, 300px); }
 }
 @media (max-height: 650px) and (min-width: 701px) {
   .nexi-welcome-content { grid-template-columns: minmax(180px, 250px) minmax(280px, 440px); gap: 34px; }
