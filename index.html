@@ -52,10 +52,10 @@
         </button>
         <div class="breadcrumb"><span class="breadcrumb-brand">e<span class="brand-accent">study</span>ante</span> <span>/</span> <strong>Mój tydzień</strong></div>
         <div class="topbar-actions">
-          <button id="exportBtn" class="button button-quiet" type="button" aria-label="Eksportuj dane" title="Zapisz kopię swoich danych">↥ <span>Eksportuj</span></button>
-          <button id="importBtn" class="button button-quiet" type="button" aria-label="Importuj dane" title="Wczytaj kopię danych">↧ <span>Importuj</span></button>
-          <button id="deviceModeBtn" class="button button-quiet device-mode-button" type="button" aria-label="Zmień wersję urządzenia" title="Zmień wersję urządzenia">▣ <span>Zmień widok</span></button>
-          <input type="file" id="importFile" accept=".json,application/json" hidden />
+          <button id="deviceModeBtn" class="button device-mode-button" type="button" aria-label="Zmień widok urządzenia" title="Zmień widok urządzenia">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="13" height="11" rx="2"/><path d="M7 19h5m-2-4v4m7-8h4v9h-4z"/></svg>
+            <span>Zmień widok</span>
+          </button>
           <div class="top-avatar">U</div>
         </div>
       </header>
@@ -99,7 +99,45 @@
                 <div><label for="taskPriority">Priorytet</label><select id="taskPriority"><option value="low">Niski</option><option value="medium" selected>Normalny</option><option value="high">Wysoki</option></select></div>
               </div>
               <label for="taskDuration">Ile czasu może zająć? Planer podzieli naukę na krótkie sesje.</label>
-              <select id="taskDuration"><option value="30">Około 30 min</option><option value="60" selected>Około 1 godziny</option><option value="90">Około 1,5 godziny</option><option value="120">Około 2 godzin</option><option value="180">Około 3 godzin</option><option value="240">Około 4 godzin</option></select>
+              <select id="taskDuration">
+                <option value="30">Około 30 min</option>
+                <option value="60" selected>Około 1 godziny</option>
+                <option value="90">Około 1,5 godziny</option>
+                <option value="120">Około 2 godzin</option>
+                <option value="180">Około 3 godzin</option>
+                <option value="240">Około 4 godzin</option>
+                <option value="360">Około 6 godzin</option>
+                <option value="480">Około 8 godzin (2 dni nauki)</option>
+                <option value="720">Około 12 godzin (3 dni nauki)</option>
+                <option value="960">Około 16 godzin (4 dni nauki)</option>
+                <option value="1200">Około 20 godzin (5 dni nauki)</option>
+                <option value="unknown">Nie wiem</option>
+              </select>
+              <div class="form-two">
+                <div>
+                  <label for="taskAssessmentType">Rodzaj sprawdzianu lub pracy (opcjonalnie)</label>
+                  <select id="taskAssessmentType">
+                    <option value="">-</option>
+                    <option value="quiz">Kartkówka</option>
+                    <option value="test">Sprawdzian</option>
+                    <option value="exam">Egzamin</option>
+                    <option value="written-work">Praca pisemna</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="taskDueDate">Data sprawdzianu lub pracy</label>
+                  <input id="taskDueDate" type="date" disabled />
+                </div>
+              </div>
+              <div class="task-photo-field">
+                <label for="taskPhotos">Zdjęcia materiałów do nauki (opcjonalnie)</label>
+                <input id="taskPhotos" class="visually-hidden-file" type="file" accept="image/*" multiple aria-describedby="taskPhotoHelp taskPhotoSelection" />
+                <label class="photo-file-picker" for="taskPhotos">
+                  <span class="photo-file-picker-button">Wybierz zdjęcia</span>
+                  <span id="taskPhotoSelection" class="photo-file-selection">Nie wybrano plików</span>
+                </label>
+                <span id="taskPhotoHelp">Zdjęcia są zapisywane tylko na tym urządzeniu.</span>
+              </div>
               <button class="button button-dark button-full" type="submit">+ Dodaj zadanie</button>
             </form>
             <div class="materials-divider"></div>
@@ -165,6 +203,10 @@
       <input id="subjectName" maxlength="40" placeholder="np. Biologia" required />
       <div class="dialog-actions"><button id="cancelSubject" class="button button-quiet" type="button">Anuluj</button><button class="button button-primary" type="submit">Dodaj przedmiot</button></div>
     </form>
+  </dialog>
+  <dialog id="taskPhotoDialog" class="task-photo-dialog" aria-label="Podgląd zdjęcia materiału">
+    <button id="closeTaskPhoto" class="task-photo-close" type="button" aria-label="Zamknij podgląd zdjęcia">×</button>
+    <img id="taskPhotoPreview" alt="Podgląd zdjęcia materiału" />
   </dialog>
   <section id="deviceChoice" class="device-choice" role="dialog" aria-modal="true" aria-labelledby="deviceChoiceTitle">
     <div class="device-choice-glow" aria-hidden="true"></div>

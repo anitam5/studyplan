@@ -14,6 +14,7 @@
   const DAY_NAMES = ["pon.", "wt.", "śr.", "czw.", "pt.", "sob.", "niedz."];
   const DAY_FULL_NAMES = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"];
   const PRIORITY_LABELS = { low: "Niski", medium: "Normalny", high: "Wysoki" };
+  const ASSESSMENT_LABELS = { quiz: "Kartkówka", test: "Sprawdzian", exam: "Egzamin", "written-work": "Praca pisemna" };
   const TOPICS = [
     { keys: ["ulamki", "ułamek", "ulamek", "licznik", "mianownik"], title: "Ułamki zwykłe", explain: "Ułamek zapisuje część całości. Licznik (na górze) mówi, ile części bierzemy, a mianownik (na dole) — na ile równych części podzielono całość.", analogy: "Wyobraź sobie pizzę podzieloną na 8 kawałków. Jeśli zjemy 3 kawałki, zjemy 3/8 pizzy.", example: "Przy dodawaniu 1/4 + 2/4 mianownik zostaje ten sam, a liczniki dodajemy: 3/4.", quiz: "Ile to 2/5 + 1/5? Spróbuj samodzielnie, zanim sprawdzisz wynik." },
     { keys: ["rownani", "równani", "x =", "niewiadom", "równanie"], title: "Równania", explain: "Równanie to zagadka z liczbą ukrytą pod literą. Obie strony znaku „=” muszą mieć tę samą wartość. Żeby znaleźć niewiadomą, wykonuj to samo działanie po obu stronach.", analogy: "Wyobraź sobie wagę: jeśli zdejmiesz 3 kg z lewej szalki, zdejmij też 3 kg z prawej, żeby równowaga została.", example: "x + 3 = 8. Odejmij 3 po obu stronach: x = 8 − 3, więc x = 5.", quiz: "Spróbuj rozwiązać: x + 6 = 14. Jakie działanie wykonasz po obu stronach?" },
@@ -35,7 +36,11 @@
   ];
   const $ = (selector) => document.querySelector(selector);
   const today = dateKey(new Date());
+  const PHOTO_DB_NAME = "estudyante-material-photos";
+  const PHOTO_STORE_NAME = "photos";
   let toastTimer;
+  let photoDbPromise;
+  const photoUrls = new Map();
   let mascotTimer;
   let mascotIdleTimer;
   let mascotInstanceCount = 0;
@@ -104,6 +109,19 @@
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   }
 
+  function formatDateLabel(value) {
+    if (!value) return "-";
+    return new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "short", year: "numeric" }).format(dateFromKey(value));
+  }
+
+  function formatDurationLabel(minutes) {
+    if (minutes >= 60 && minutes % 60 === 0) {
+      const hours = minutes / 60;
+      return `${hours} ${hours === 1 ? "godzina" : hours < 5 ? "godziny" : "godzin"}`;
+    }
+    return `${minutes} min`;
+  }
+
   function dateFromKey(key) {
     const [year, month, day] = key.split("-").map(Number);
     return new Date(year, month - 1, day);
@@ -168,10 +186,99 @@
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      return true;
     } catch (error) {
       console.error("Nie udało się zapisać planera w przeglądarce.", error);
       showToast("Nie udało się zapisać zmian. Sprawdź wolne miejsce w przeglądarce.");
+      return false;
     }
+  }
+
+  function openPhotoDatabase() {
+    if (!("indexedDB" in window)) return Promise.reject(new Error("Ta przeglądarka nie obsługuje lokalnego zapisu zdjęć."));
+    if (!photoDbPromise) {
+      photoDbPromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open(PHOTO_DB_NAME, 1);
+        request.onupgradeneeded = () => request.result.createObjectStore(PHOTO_STORE_NAME);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("Nie udało się otworzyć pamięci zdjęć."));
+        request.onblocked = () => reject(new Error("Pamięć zdjęć jest zablokowana przez inną kartę aplikacji."));
+      });
+    }
+    return photoDbPromise;
+  }
+
+  async function writePhoto(id, dataUrl) {
+    const database = await openPhotoDatabase();
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction(PHOTO_STORE_NAME, "readwrite");
+      transaction.objectStore(PHOTO_STORE_NAME).put(dataUrl, id);
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error || new Error("Nie udało się zapisać zdjęcia."));
+      transaction.onabort = () => reject(transaction.error || new Error("Zapis zdjęcia został przerwany."));
+    });
+  }
+
+  async function readPhotoUrl(id) {
+    if (photoUrls.has(id)) return photoUrls.get(id);
+    const database = await openPhotoDatabase();
+    const dataUrl = await new Promise((resolve, reject) => {
+      const transaction = database.transaction(PHOTO_STORE_NAME, "readonly");
+      const request = transaction.objectStore(PHOTO_STORE_NAME).get(id);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error("Nie udało się odczytać zdjęcia."));
+    });
+    if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) return null;
+    photoUrls.set(id, dataUrl);
+    return dataUrl;
+  }
+
+  async function deletePhoto(id) {
+    const database = await openPhotoDatabase();
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction(PHOTO_STORE_NAME, "readwrite");
+      transaction.objectStore(PHOTO_STORE_NAME).delete(id);
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error || new Error("Nie udało się usunąć zdjęcia."));
+      transaction.onabort = () => reject(transaction.error || new Error("Usuwanie zdjęcia zostało przerwane."));
+    });
+    photoUrls.delete(id);
+  }
+
+  async function compressPhoto(file) {
+    if (!file.type.startsWith("image/")) throw new Error("Wybierz plik graficzny.");
+    if (file.size > 12 * 1024 * 1024) throw new Error("Zdjęcie jest za duże. Maksymalny rozmiar pliku to 12 MB.");
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(file);
+    } catch {
+      throw new Error("Nie udało się otworzyć zdjęcia. Wybierz obraz JPG, PNG lub WebP.");
+    }
+    const scale = Math.min(1, 2000 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) {
+      bitmap.close();
+      throw new Error("Nie udało się przygotować zdjęcia.");
+    }
+    context.fillStyle = "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob((result) => {
+        if (result) resolve(result);
+        else reject(new Error("Nie udało się przygotować zdjęcia."));
+      }, "image/jpeg", .84);
+    });
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Nie udało się przygotować zdjęcia do zapisu."));
+      reader.readAsDataURL(blob);
+    });
   }
 
   function loadState() {
@@ -198,6 +305,8 @@
           return {
             ...task,
             completed: Boolean(task.completed),
+            assessmentType: ASSESSMENT_LABELS[task.assessmentType] ? task.assessmentType : "",
+            dueDate: typeof task.dueDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(task.dueDate) ? task.dueDate : "",
             week: /^\d{4}-\d{2}-\d{2}$/.test(task.week) ? task.week : legacyWeek
           };
         });
@@ -338,19 +447,66 @@
       const subject = document.createElement("span");
       subject.textContent = subjectFor(task.subjectId)?.name || "Przedmiot";
       const duration = document.createElement("span");
-      duration.textContent = `${task.duration} min`;
+      duration.textContent = formatDurationLabel(task.duration);
       const priority = document.createElement("span");
       priority.className = "priority-label";
       priority.textContent = PRIORITY_LABELS[task.priority] || PRIORITY_LABELS.medium;
+      const assessment = document.createElement("span");
+      assessment.textContent = task.assessmentType ? `${ASSESSMENT_LABELS[task.assessmentType]} · ${formatDateLabel(task.dueDate)}` : "-";
       if (completed) {
         const finished = document.createElement("span");
         finished.className = "task-complete-label";
         finished.textContent = "Ukończono ✓";
-        meta.append(subject, duration, finished);
+        meta.append(subject, duration, assessment, finished);
       } else {
-        meta.append(subject, duration, priority);
+        meta.append(subject, duration, assessment, priority);
       }
       main.append(title, meta);
+      if (Array.isArray(task.photos) && task.photos.length) {
+        const photos = document.createElement("div");
+        photos.className = "task-photo-gallery";
+        task.photos.forEach((photoId) => {
+          const photo = document.createElement("div");
+          photo.className = "task-photo-thumb";
+          const image = document.createElement("img");
+          image.alt = `Zdjęcie materiału do zadania: ${task.title}`;
+          readPhotoUrl(photoId).then((url) => {
+            if (url) image.src = url;
+            else {
+              photo.remove();
+              showToast("Nie odnaleziono lokalnie zapisanego zdjęcia.");
+            }
+          }).catch((error) => {
+            console.error("Nie udało się wczytać zdjęcia materiału.", error);
+            photo.remove();
+            showToast(error.message || "Nie udało się wczytać zdjęcia materiału.");
+          });
+          image.addEventListener("click", () => {
+            if (!image.src) return;
+            $("#taskPhotoPreview").src = image.src;
+            $("#taskPhotoDialog").showModal();
+          });
+          const removePhoto = document.createElement("button");
+          removePhoto.type = "button";
+          removePhoto.className = "task-photo-remove";
+          removePhoto.textContent = "×";
+          removePhoto.setAttribute("aria-label", "Usuń zdjęcie materiału");
+          removePhoto.addEventListener("click", async () => {
+            try {
+              await deletePhoto(photoId);
+              task.photos = task.photos.filter((id) => id !== photoId);
+              saveState();
+              renderTasks();
+            } catch (error) {
+              console.error("Nie udało się usunąć zdjęcia materiału.", error);
+              showToast(error.message || "Nie udało się usunąć zdjęcia.");
+            }
+          });
+          photo.append(image, removePhoto);
+          photos.append(photo);
+        });
+        main.append(photos);
+      }
       const actions = document.createElement("div");
       actions.className = "task-actions";
       const edit = document.createElement("button");
@@ -463,9 +619,9 @@
     const grid = $("#weekGrid");
     grid.replaceChildren();
     const lastDate = addDays(weekStart, 6);
-    const formatter = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "short" });
+    const formatter = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long", year: "numeric" });
     $("#weekLabel").textContent = `${formatter.format(weekStart)} – ${formatter.format(lastDate)}`;
-    $("#taskWeekHeading").textContent = `Zadania na tydzień ${formatter.format(weekStart)}`;
+    $("#taskWeekHeading").textContent = `Zadania na tydzień ${formatter.format(weekStart)}–${formatter.format(lastDate)}`;
     const sessionsByDate = new Map();
     const selectedSessions = state.sessions.filter((session) => session.date >= weekKey() && session.date <= dateKey(lastDate));
     selectedSessions.forEach((session) => {
@@ -901,7 +1057,7 @@
     const remaining = new Map();
     state.tasks.forEach((task) => remaining.set(task.id, taskIsComplete(task) ? 0 : Math.max(0, task.duration - completedMinutes(task.id))));
     const pending = state.tasks.filter((task) => task.week === targetWeek && !taskIsComplete(task) && (remaining.get(task.id) || 0) > 0);
-    pending.sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority) || a.title.localeCompare(b.title, "pl"));
+    pending.sort((a, b) => (a.dueDate || "9999-12-31").localeCompare(b.dueDate || "9999-12-31") || priorityRank(b.priority) - priorityRank(a.priority) || a.title.localeCompare(b.title, "pl"));
     const generated = [];
     const startDate = dateFromKey(targetWeek) < dateFromKey(today) ? dateFromKey(today) : dateFromKey(targetWeek);
     for (let date = startDate; dateKey(date) <= weekEnd; date = addDays(date, 1)) {
@@ -924,7 +1080,9 @@
           const slotEnd = Math.min(slotStart + 50, end);
           const conflict = busy.some(([busyStart, busyEnd]) => slotStart < busyEnd + 10 && slotEnd + 10 > busyStart);
           if (slotEnd > slotStart && !conflict) {
-            const eligible = pending.filter((task) => (remaining.get(task.id) || 0) > 0);
+            const eligible = pending.filter((task) =>
+              (remaining.get(task.id) || 0) > 0 && (!task.dueDate || key < task.dueDate)
+            );
             if (!eligible.length) break;
             const task = eligible.find((candidate) => !dayTasks.has(candidate.id)) || eligible[0];
             const duration = Math.min(slotEnd - slotStart, remaining.get(task.id));
@@ -1012,11 +1170,17 @@
     state.subjects = state.subjects.filter((item) => item.id !== id);
     state.tasks = state.tasks.filter((task) => task.subjectId !== id);
     state.sessions = state.sessions.filter((session) => !taskIds.has(session.taskId));
+    linked.flatMap((task) => Array.isArray(task.photos) ? task.photos : []).forEach((photoId) => {
+      deletePhoto(photoId).catch((error) => {
+        console.error("Nie udało się usunąć zdjęcia usuniętego zadania.", error);
+        showToast(error.message || "Nie udało się usunąć jednego ze zdjęć.");
+      });
+    });
     saveState();
     renderAll();
   }
 
-  function addTask(event) {
+  async function addTask(event) {
     event.preventDefault();
     const title = $("#taskTitle").value.trim();
     const subjectId = $("#taskSubject").value;
@@ -1024,9 +1188,55 @@
       showToast("Wpisz zadanie i wybierz przedmiot.");
       return;
     }
-    const task = { id: makeId(), title, subjectId, week: weekKey(), duration: Number($("#taskDuration").value), priority: $("#taskPriority").value, completed: false };
+    const assessmentType = $("#taskAssessmentType").value;
+    const dueDate = $("#taskDueDate").value;
+    if (assessmentType && !dueDate) {
+      showToast("Wybierz datę sprawdzianu lub pracy.");
+      $("#taskDueDate").focus();
+      return;
+    }
+    if (assessmentType && dueDate <= today) {
+      showToast("Data sprawdzianu lub pracy musi przypadać w przyszłości.");
+      $("#taskDueDate").focus();
+      return;
+    }
+    const fileInput = $("#taskPhotos");
+    const files = Array.from(fileInput.files || []);
+    const photos = [];
+    try {
+      for (const file of files) {
+        const photoId = makeId();
+        const dataUrl = await compressPhoto(file);
+        await writePhoto(photoId, dataUrl);
+        photoUrls.set(photoId, dataUrl);
+        photos.push(photoId);
+      }
+    } catch (error) {
+      await Promise.all(photos.map((id) => deletePhoto(id).catch((cleanupError) => console.error("Nie udało się wyczyścić nieużywanego zdjęcia.", cleanupError))));
+      console.error("Nie udało się dodać zdjęć materiału.", error);
+      showToast(error.message || "Nie udało się dodać zdjęć.");
+      return;
+    }
+    const selectedDuration = $("#taskDuration").value;
+    const task = {
+      id: makeId(),
+      title,
+      subjectId,
+      week: weekKey(),
+      duration: selectedDuration === "unknown" ? 60 : Number(selectedDuration),
+      priority: $("#taskPriority").value,
+      assessmentType,
+      dueDate,
+      photos,
+      completed: false
+    };
     state.tasks.push(task);
     $("#taskTitle").value = "";
+    $("#taskPhotos").value = "";
+    $("#taskPhotoSelection").textContent = "Nie wybrano plików";
+    $("#taskAssessmentType").value = "";
+    $("#taskDueDate").value = "";
+    $("#taskDueDate").disabled = true;
     createPlan(true);
   }
 
@@ -1048,6 +1258,12 @@
     if (!task || !window.confirm(`Usunąć zadanie „${task.title}” i jego sesje z planu?`)) return;
     state.tasks = state.tasks.filter((item) => item.id !== id);
     state.sessions = state.sessions.filter((session) => session.taskId !== id);
+    (task.photos || []).forEach((photoId) => {
+      deletePhoto(photoId).catch((error) => {
+        console.error("Nie udało się usunąć zdjęcia usuniętego zadania.", error);
+        showToast(error.message || "Nie udało się usunąć jednego ze zdjęć.");
+      });
+    });
     saveState();
     renderAll();
   }
@@ -1142,51 +1358,6 @@
     showToast("Zapisano Twoją dostępność i uaktualniono plan.");
   }
 
-  function exportData() {
-    const blob = new Blob([JSON.stringify({ version: 3, ...state }, null, 2)], { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `moj-plan-nauki-${today}.json`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-    showToast("Zapisano kopię Twojego planu.");
-  }
-
-  function importData(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(String(reader.result));
-        if (!parsed || !Array.isArray(parsed.subjects) || !Array.isArray(parsed.tasks) || !Array.isArray(parsed.availability)) throw new Error("Plik nie zawiera danych planera.");
-        const subjects = parsed.subjects.filter((item) => item && typeof item.id === "string" && typeof item.name === "string");
-        const subjectIds = new Set(subjects.map((item) => item.id));
-        const tasks = parsed.tasks.filter((item) => item && typeof item.id === "string" && typeof item.title === "string" && subjectIds.has(item.subjectId) && Number.isFinite(item.duration))
-          .map((task) => ({ ...task, week: /^\d{4}-\d{2}-\d{2}$/.test(task.week) ? task.week : dateKey(mondayOf(task.due ? dateFromKey(task.due) : new Date())) }));
-        const taskIds = new Set(tasks.map((item) => item.id));
-        const sessions = Array.isArray(parsed.sessions) ? parsed.sessions.filter((item) => item && typeof item.id === "string" && taskIds.has(item.taskId) && typeof item.date === "string" && Number.isFinite(item.minutes)).map((item) => ({ ...item, completed: Boolean(item.completed) })) : [];
-        const availability = normalizeAvailability(parsed.availability.slice(0, 7));
-        if (!window.confirm("Import zastąpi aktualne przedmioty, zadania i plan. Kontynuować?")) return;
-        state = {
-          subjects,
-          tasks,
-          sessions,
-          availability,
-          generated: Boolean(parsed.generated),
-          archiveRetention: ["off", ...Object.keys(ARCHIVE_RETENTION_MS)].includes(parsed.archiveRetention) ? parsed.archiveRetention : "off",
-          ...conversationsFromData(parsed)
-        };
-        saveState();
-        renderAll();
-        showToast("Wczytano Twój plan nauki.");
-      } catch (error) {
-        console.error("Nie udało się zaimportować planu.", error);
-        showToast("Nie udało się wczytać pliku. Sprawdź, czy to poprawny eksport planera.");
-      }
-    };
-    reader.onerror = () => showToast("Nie udało się odczytać wybranego pliku.");
-    reader.readAsText(file);
-  }
-
   async function checkAiStatus() {
     const badge = $("#aiStatus");
     try {
@@ -1256,6 +1427,21 @@
   });
   $("#cancelSubject").addEventListener("click", () => $("#subjectDialog").close());
   $("#deviceModeBtn").addEventListener("click", openDeviceChoice);
+  $("#taskAssessmentType").addEventListener("change", (event) => {
+    const dateInput = $("#taskDueDate");
+    dateInput.disabled = !event.target.value;
+    dateInput.required = Boolean(event.target.value);
+    if (!event.target.value) dateInput.value = "";
+    else dateInput.min = dateKey(addDays(dateFromKey(today), 1));
+  });
+  $("#taskPhotos").addEventListener("change", (event) => {
+    const count = event.target.files?.length || 0;
+    $("#taskPhotoSelection").textContent = count ? `Wybrano zdjęć: ${count}` : "Nie wybrano plików";
+  });
+  $("#closeTaskPhoto").addEventListener("click", () => $("#taskPhotoDialog").close());
+  $("#taskPhotoDialog").addEventListener("click", (event) => {
+    if (event.target === $("#taskPhotoDialog")) $("#taskPhotoDialog").close();
+  });
   $("#mobileNavToggle").addEventListener("click", () => {
     setMobileNavOpen(!document.body.classList.contains("mobile-nav-open"));
   });
@@ -1303,13 +1489,6 @@
     const dayIndex = Number(button.dataset.day);
     if (button.dataset.action === "add") addAvailabilityInterval(dayIndex);
     else if (button.dataset.action === "remove") removeAvailabilityInterval(dayIndex, Number(button.dataset.interval));
-  });
-  $("#exportBtn").addEventListener("click", exportData);
-  $("#importBtn").addEventListener("click", () => $("#importFile").click());
-  $("#importFile").addEventListener("change", (event) => {
-    const file = event.target.files?.[0];
-    if (file) importData(file);
-    event.target.value = "";
   });
   $("#chatForm").addEventListener("submit", (event) => sendChat(event));
   $("#newChatBtn").addEventListener("click", startNewConversation);
