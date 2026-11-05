@@ -1526,7 +1526,10 @@ body.device-choice-open { overflow: hidden; }
   transform-origin: center;
   animation: welcome-bubble-expand .8s cubic-bezier(.18, .89, .32, 1.24) both;
 }
-.device-choice-eyebrow::after { position: absolute; bottom: -5px; left: 50%; width: 9px; height: 9px; border-right: 1px solid rgba(189, 113, 54, .2); border-bottom: 1px solid rgba(189, 113, 54, .2); background: #fffaf3; content: ""; transform: translateX(-50%) rotate(45deg); }
+.device-choice-eyebrow::before,
+.device-choice-eyebrow::after { position: absolute; left: 50%; width: 0; height: 0; content: ""; transform: translateX(-50%); }
+.device-choice-eyebrow::before { bottom: -11px; border-top: 11px solid rgba(189, 113, 54, .38); border-right: 11px solid transparent; border-left: 11px solid transparent; }
+.device-choice-eyebrow::after { bottom: -8px; border-top: 9px solid #fffaf3; border-right: 9px solid transparent; border-left: 9px solid transparent; }
 @keyframes welcome-bubble-expand { from { opacity: 0; transform: scale(.35); } 70% { opacity: 1; transform: scale(1.06); } to { opacity: 1; transform: scale(1); } }
 .device-choice-content h1 {
   margin: 0;
@@ -1668,8 +1671,6 @@ body.device-mobile .mobile-nav-toggle span { width: 15px; height: 2px; border-ra
 body.device-mobile .topbar { justify-content: flex-start; gap: 10px; }
 body.device-mobile .breadcrumb { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 body.device-mobile .topbar-actions { gap: 5px; margin-left: auto; }
-body.device-mobile .topbar-actions #exportBtn,
-body.device-mobile .topbar-actions #importBtn { min-width: 34px; min-height: 34px; padding: 5px 8px; }
 body.device-mobile .topbar-actions button span { display: none; }
 body.device-mobile .device-mode-button { min-width: 36px; min-height: 36px; padding: 5px 8px; }
 body.device-mobile .device-mode-button span { display: none; }
@@ -1736,6 +1737,26 @@ body.device-mobile .toast { right: 12px; bottom: calc(78px + env(safe-area-inset
     animation: none !important;
   }
 }
+
+.device-mode-button { min-height: 38px; padding: 7px 12px; border-color: #efb47d; background: #fff1e2; color: #a64e15; font-size: 11px; font-weight: 800; box-shadow: 0 2px 7px #8c4a1920; }
+.device-mode-button:hover { background: #ffe5ca; box-shadow: 0 4px 11px #8c4a192b; }
+.device-mode-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.task-photo-field { display: grid; gap: 5px; }
+.task-photo-field > label:first-child { margin-bottom: 0; }
+.visually-hidden-file { position: absolute; width: 1px !important; height: 1px !important; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+.photo-file-picker { display: flex !important; align-items: center; gap: 10px; min-height: 39px; margin: 0 !important; padding: 5px 8px; border: 1px solid #e8d5c2; border-radius: 8px; background: #fffaf3; cursor: pointer; }
+.photo-file-picker:focus-within { outline: 2px solid #df7425; outline-offset: 2px; }
+.photo-file-picker-button { padding: 7px 10px; border-radius: 6px; background: #f28c38; color: white; font-size: 11px; font-weight: 800; }
+.photo-file-selection { overflow: hidden; color: #514539; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.task-photo-field > span { color: #796f62; font-size: 10px; }
+.task-photo-gallery { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.task-photo-thumb { position: relative; width: 58px; height: 58px; }
+.task-photo-thumb img { width: 100%; height: 100%; border: 1px solid #eadbca; border-radius: 7px; object-fit: cover; cursor: zoom-in; }
+.task-photo-remove, .task-photo-close { position: absolute; top: -6px; right: -6px; display: grid; width: 21px; height: 21px; place-items: center; padding: 0; border: 1px solid white; border-radius: 50%; background: #a64e15; color: white; font-size: 16px; line-height: 1; cursor: pointer; }
+.task-photo-dialog { position: relative; width: min(92vw, 900px); max-width: none; max-height: 90dvh; padding: 14px; border: 0; border-radius: 14px; background: #fffaf3; box-shadow: 0 15px 70px #0005; }
+.task-photo-dialog::backdrop { background: #21180fc9; }
+.task-photo-dialog img { display: block; max-width: 100%; max-height: calc(90dvh - 28px); margin: auto; object-fit: contain; }
+.task-photo-close { z-index: 1; top: 8px; right: 8px; width: 30px; height: 30px; font-size: 22px; }
 
 /* Lively details, with a static fallback for reduced-motion preferences. */
 .main-content > .topbar,
